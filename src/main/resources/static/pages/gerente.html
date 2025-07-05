@@ -563,7 +563,7 @@
 
         // Cargar estadísticas
         async function loadEstadisticas() {
-            const response = await securityManager.authenticatedRequest('/api/estadisticas/gerente');
+            const response = await securityManager.makeRequest('/api/estadisticas/gerente');
             if (response.ok) {
                 return await response.json();
             }
@@ -631,7 +631,7 @@
         async function loadIncidenciasRecientes() {
             try {
                 const response = await securityManager.authenticatedRequest('/api/incidencias?limit=10');
-                if (response.ok) {
+                if (response.ok) { // Assuming /api/incidencias?limit=10 doesn't need specific user identification for this simplified mode
                     const incidencias = await response.json();
                     updateIncidenciasRecientesTable(incidencias);
                 }
@@ -774,24 +774,44 @@
         }
 
         // Crear usuario
-        function crearUsuario() {
+        async function crearUsuario() { // Make the function async
             const form = document.getElementById('newUserForm');
             if (!securityManager.validateForm(form)) {
                 return;
             }
 
             const formData = new FormData(form);
+            // Convert FormData to a plain object for JSON body
             const userData = Object.fromEntries(formData);
 
-            securityManager.showAlert('Creando usuario...', 'info');
+            securityManager.showLoading('Creando usuario...'); // Use showLoading for API calls
+            securityManager.clearFormValidation(form); // Clear validation messages
 
-            // Aquí iría la lógica para crear el usuario
-            setTimeout(() => {
-                securityManager.showAlert('Usuario creado exitosamente', 'success');
+            try {
+                // Simulated API call using makeRequest
+                const response = await securityManager.makeRequest('/api/usuarios', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(userData)
+                });
+
+                securityManager.hideLoading();
+
+                if (response.ok) {
+                    securityManager.showAlert('Usuario creado exitosamente', 'success');
                 bootstrap.Modal.getInstance(document.getElementById('newUserModal')).hide();
                 form.reset();
                 securityManager.clearFormValidation(form);
-            }, 1000);
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                    securityManager.showAlert(`Error al crear usuario: ${errorData.message || response.statusText}`, 'danger');
+                     console.error('Error response creating user:', response.status, errorData);
+                }
+            } catch (error) {
+                securityManager.hideLoading();
+                securityManager.showAlert(`Error en la solicitud para crear usuario: ${error.message}`, 'danger');
+                 console.error('Exception creating user:', error);
+            }
         }
 
         // Escuchar actualizaciones de incidencias

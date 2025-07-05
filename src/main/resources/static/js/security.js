@@ -2,11 +2,9 @@
 class SecurityManager {
     constructor() {
         this.token = localStorage.getItem('jwt_token');
-        this.userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+        this.userInfo = JSON.parse(localStorage.getItem('user_info') || null);
         this.apiBase = '/api';
         this.toastManager = new ToastManager(); // Usar el módulo común de tostadas
-
-        // Verificar autenticación al cargar
         this.checkAuthentication();
 
         // Configurar interceptor para requests
@@ -15,7 +13,8 @@ class SecurityManager {
 
     // Verificar si el usuario está autenticado
     isAuthenticated() {
-        return this.token && this.token !== 'null' && !this.isTokenExpired();
+        // Consideramos autenticado si tenemos la información del usuario
+        return this.userInfo !== null && this.userInfo.idUsuario != null;
     }
 
     // Verificar si el token ha expirado
@@ -32,7 +31,7 @@ class SecurityManager {
         }
     }
 
-    // Login del usuario - MEJORADO con manejo robusto de errores
+    // Login del usuario
     async login(email, password) {
         try {
             this.showLoading('Iniciando sesión...');
@@ -47,16 +46,14 @@ class SecurityManager {
 
             const data = await response.json();
 
-            if (response.ok && data.token) {
-                this.token = data.token;
+            if (response.ok && data.success && data.usuario) {
+                // No manejamos tokens, solo la info del usuario
                 this.userInfo = data.usuario;
 
                 // Guardar en localStorage
-                localStorage.setItem('jwt_token', this.token);
                 localStorage.setItem('user_info', JSON.stringify(this.userInfo));
 
                 this.hideLoading();
-                this.toastManager.success('¡Inicio de sesión exitoso!', 2000);
                 setTimeout(() => this.redirectByRole(), 1000);
                 return { success: true, data };
             } else {
@@ -89,7 +86,6 @@ class SecurityManager {
         this.toastManager.error(errorDetails, 5000, { title: errorMessage });
     }
 
-    // NUEVO: Método para realizar requests con manejo robusto de errores
     async makeRequest(url, options = {}) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
@@ -100,7 +96,7 @@ class SecurityManager {
                 signal: controller.signal,
                 headers: {
                     'Content-Type': 'application/json',
-                    ...options.headers
+                    ...options.headers // Permitir otras cabeceras manualmente
                 }
             });
 
@@ -126,9 +122,8 @@ class SecurityManager {
     }
 
     // Logout del usuario
-    logout() {
-        this.token = null;
-        this.userInfo = {};
+    logout() { // Simplificado para remover solo info del usuario
+        this.userInfo = null;
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_info');
         window.location.href = '/pages/login.html';
@@ -141,7 +136,7 @@ class SecurityManager {
             return;
         }
 
-        const role = this.userInfo.rol;
+        const role = this.getUserInfo().rol; // Usar getUserInfo para consistencia
         switch (role) {
             case 'GERENTE':
                 window.location.href = '/pages/gerente.html';
@@ -161,7 +156,7 @@ class SecurityManager {
     // Verificar autenticación y redireccionar si es necesario
     checkAuthentication() {
         const currentPage = window.location.pathname;
-        const isLoginPage = currentPage.includes('login.html');
+        const isLoginPage = currentPage.includes('login.html') || currentPage === '/'; // Considerar '/' como página de login
 
         if (!this.isAuthenticated() && !isLoginPage) {
             window.location.href = '/pages/login.html';
@@ -176,83 +171,25 @@ class SecurityManager {
         return true;
     }
 
-    // Verificar autorización por rol
+    // Verificar autorización por rol (usar en las páginas HTML)
     hasRole(requiredRole) {
+        // Asegurarse de que userInfo esté cargado
+        if (!this.userInfo || !this.userInfo.rol) {
+            // console.warn('hasRole called before userInfo is available.');
+            return false; // No tiene el rol si no hay info del usuario
+        }
         return this.userInfo.rol === requiredRole;
     }
 
     // Configurar interceptor HTTP para incluir token
-    setupHttpInterceptor() {
-        const originalFetch = window.fetch;
+    // Eliminado: setupHttpInterceptor ya no es necesario sin JWT
+    setupHttpInterceptor() { /* Logic removed */ }
 
-        window.fetch = async (url, options = {}) => {
-            // Solo agregar token para requests a la API
-            if (url.startsWith(this.apiBase) || url.startsWith('/api') || url.startsWith('/pages/')) {
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                };
-            }
-
-            const response = await originalFetch(url, options);
-
-            // Manejar errores 401 (no autorizado)
-            if (response.status === 401) {
-                this.logout();
-                return response;
-            }
-
-            return response;
-        };
-    }
-
-    // Realizar request autenticado - MEJORADO
-    async authenticatedRequest(url, options = {}) {
-        if (!this.isAuthenticated()) {
-            this.toastManager.warning('Sesión expirada. Redirigiendo al login...', 3000);
-            setTimeout(() => this.logout(), 2000);
-            return null;
-        }
-
-        try {
-            const response = await this.makeRequest(url, {
-                ...options,
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                }
-            });
-
-            return response;
-        } catch (error) {
-            return this.handleAuthenticatedRequestError(error, url, options);
-        }
-    }
-
-    // NUEVO: Manejo específico de errores en requests autenticados
-    async handleAuthenticatedRequestError(error, originalUrl, originalOptions) {
-        if (error.message.includes('401')) {
-            // Token inválido o expirado
-            this.toastManager.warning('Sesión expirada. Redirigiendo al login...', 3000);
-            setTimeout(() => this.logout(), 2000);
-            return null;
-        } else if (error.message.includes('403')) {
-            this.toastManager.error('No tienes permisos para realizar esta acción', 4000);
-            return null;
-        } else if (error.message.includes('500')) {
-            this.toastManager.error('Error del servidor. Intenta nuevamente.', 4000);
-            return null;
-        } else if (error.message.includes('conexión') || error.message.includes('red')) {
-            // Error de red - mostrar opción de reintentar
-            this.showNetworkErrorRetry(originalUrl, originalOptions);
-            return null;
-        } else {
-            this.toastManager.error(`Error inesperado: ${error.message}`, 5000);
-            throw error;
-        }
-    }
+    // Eliminado: authenticatedRequest ya no es necesario sin JWT auth header
+    // Si necesitas enviar idUsuario/rol a la API, crea un nuevo método.
+    // authenticatedRequest(url, options = {}) { /* Logic removed */ }
+    // Eliminado: handleAuthenticatedRequestError tampoco es necesario sin authenticatedRequest
+    // handleAuthenticatedRequestError(error, originalUrl, originalOptions) { /* Logic removed */ }
 
     // NUEVO: Mostrar error de red con opción de reintentar
     showNetworkErrorRetry(url, options) {
@@ -268,7 +205,8 @@ class SecurityManager {
             this.toastManager.info('Reintentando...', 2000);
 
             try {
-                await this.authenticatedRequest(url, options);
+                // Usar makeRequest para reintentar
+                await this.makeRequest(url, options);
             } catch (error) {
                 console.error('Error en reintento:', error);
             }
@@ -277,12 +215,14 @@ class SecurityManager {
 
     // Obtener información del usuario
     getUserInfo() {
+        // Asegurarse de cargar desde localStorage si no está en memoria (ej. después de refresh)
+        if (!this.userInfo || !this.userInfo.idUsuario) {
+            const storedUserInfo = localStorage.getItem('user_info');
+            if (storedUserInfo) {
+                this.userInfo = JSON.parse(storedUserInfo);
+            }
+        }
         return this.userInfo;
-    }
-
-    // Obtener token
-    getToken() {
-        return this.token;
     }
 
     // Mostrar alerta
@@ -457,6 +397,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Agregar evento al formulario de login (si existe)
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(event) {
+        event.preventDefault(); // Prevenir el envío normal del formulario
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        // Llamar al método login del securityManager
+        await securityManager.login(email, password);
+    });
+}
 
 // Exportar para uso global
 window.securityManager = securityManager;

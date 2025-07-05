@@ -4,7 +4,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import com.mycompany.vcsystems.modelo.service.UsuarioService;
-import com.mycompany.vcsystems.security.JwtTokenProvider;
 import com.mycompany.vcsystems.modelo.entidades.Usuario; // Asegúrate de importar la clase Usuario
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -22,21 +21,15 @@ import java.util.Map;
 public class AuthController {
 
     private final UsuarioService usuarioService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     // Inyección por constructor para evitar dependencias circulares
-    public AuthController(UsuarioService usuarioService, JwtTokenProvider jwtTokenProvider) {
+    public AuthController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
-            return usuarioService.autenticarUsuario(request.getCorreo(), request.getContrasena())
-                .map(user -> {
-                    // Cambia esta línea para usar createToken directamente
-                    String token = jwtTokenProvider.createToken(user.getCorreo(), user.getAuthorities());
                     Map<String, Object> response = new HashMap<>();
                     response.put("token", token);
                     response.put("success", true);
@@ -68,68 +61,6 @@ public class AuthController {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Error interno del servidor", "success", false));
-        }
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        try {
-            // Validar que el token de refresh es válido
-            if (!jwtTokenProvider.validateToken(request.getOldToken())) {
-                log.warn("Intento de refresh con token inválido o expirado");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Token de refresh inválido o expirado", "success", false));
-            }
-
-            String username = jwtTokenProvider.getUsernameFromToken(request.getOldToken());
-
-            // Obtener el usuario basado en el nombre de usuario
-            Usuario user = usuarioService.findByCorreo(username)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-
-            // Invalidar el token de refresh anterior (one-time use)
-            jwtTokenProvider.invalidateToken(request.getOldToken());
-
-            // Generar nuevo token de acceso con roles
-            String newAccessToken = jwtTokenProvider.createToken(user.getCorreo(), user.getAuthorities());
-            // Generar nuevo token de refresh
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(username);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", newAccessToken);
-            response.put("refreshToken", newRefreshToken);
-            response.put("success", true);
-
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            log.warn("Token inválido o expirado en refresh: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Token inválido o expirado", "success", false));
-        } catch (Exception e) {
-            // Registrar el stack trace completo para depuración y monitoreo
-            log.error("Error interno durante el proceso de refresh de token", e);
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error interno del servidor", "success", false));
-        }
-    }
-
-    // Nuevo endpoint para logout seguro
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request) {
-        try {
-            // Invalidar el token de acceso
-            jwtTokenProvider.invalidateToken(request.getToken());
-
-            // Si hay refresh token, también invalidarlo
-            if (request.getRefreshToken() != null && !request.getRefreshToken().isEmpty()) {
-                jwtTokenProvider.invalidateToken(request.getRefreshToken());
-            }
-
-            return ResponseEntity.ok(Map.of("message", "Logout exitoso", "success", true));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error durante logout", "success", false));
         }
     }
 

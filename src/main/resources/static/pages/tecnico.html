@@ -638,8 +638,8 @@
         async function loadMisIncidencias() {
             try {
                 securityManager.showLoading('Cargando mis incidencias...');
-
-                const response = await securityManager.authenticatedRequest('/api/incidencias/mis-incidencias');
+                // Usar makeRequest para incluir el token automáticamente
+                const response = await securityManager.makeRequest('/api/incidencias/mis-incidencias');
                 if (response.ok) {
                     const incidencias = await response.json();
                     updateMisIncidenciasTable(incidencias);
@@ -707,7 +707,8 @@
         // Cargar nuevas incidencias
         async function loadNuevasIncidencias() {
             try {
-                const response = await securityManager.authenticatedRequest('/api/incidencias/nuevas');
+                // Usar makeRequest para incluir el token automáticamente
+                const response = await securityManager.makeRequest('/api/incidencias/nuevas');
                 if (response.ok) {
                     const incidencias = await response.json();
                     updateNuevasIncidenciasTable(incidencias);
@@ -778,7 +779,8 @@
             if (!currentIncidenciaId) return;
 
             try {
-                const response = await securityManager.authenticatedRequest(`/api/incidencias/${currentIncidenciaId}/asignar`, {
+                // Usar makeRequest para incluir el token automáticamente
+                const response = await securityManager.makeRequest(`/api/incidencias/${currentIncidenciaId}/asignar`, {
                     method: 'POST'
                 });
 
@@ -800,7 +802,8 @@
         // Ver detalle de incidencia
         async function verDetalleIncidencia(idIncidencia) {
             try {
-                const response = await securityManager.authenticatedRequest(`/api/incidencias/${idIncidencia}`);
+                // Usar makeRequest para incluir el token automáticamente
+                const response = await securityManager.makeRequest(`/api/incidencias/${idIncidencia}`);
                 if (response.ok) {
                     const incidencia = await response.json();
                     mostrarDetalleIncidencia(incidencia);
@@ -853,7 +856,8 @@
         async function cambiarEstadoRapido(idIncidencia, nuevoEstado) {
             try {
                 const response = await securityManager.authenticatedRequest(`/api/incidencias/${idIncidencia}/estado`, {
-                    method: 'PUT',
+                    // Usar makeRequest para incluir el token automáticamente
+                    method: 'PUT', // Asegurar que el método sea PUT
                     body: JSON.stringify({ estado: nuevoEstado })
                 });
 

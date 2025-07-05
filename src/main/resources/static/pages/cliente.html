@@ -802,7 +802,7 @@
             try {
                 setSubmitLoading(true);
 
-                const response = await securityManager.authenticatedRequest('/api/incidencias', {
+                const response = await securityManager.makeRequest('/api/incidencias', {
                     method: 'POST',
                     body: JSON.stringify(solicitudData)
                 });
@@ -870,7 +870,7 @@
         // Cargar información de la empresa
         async function loadEmpresaInfo() {
             try {
-                const response = await securityManager.authenticatedRequest('/api/cliente/info');
+                const response = await securityManager.makeRequest('/api/cliente/info');
                 if (response.ok) {
                     const info = await response.json();
                     document.getElementById('empresaName').textContent = info.nombreEmpresa || 'Mi Empresa';
@@ -883,7 +883,7 @@
         // Cargar solicitudes
         async function loadSolicitudes() {
             try {
-                const response = await securityManager.authenticatedRequest('/api/incidencias/cliente');
+                const response = await securityManager.makeRequest('/api/incidencias/cliente');
                 if (response.ok) {
                     const solicitudes = await response.json();
                     updateSolicitudesTable(solicitudes);
@@ -931,7 +931,7 @@
         // Ver detalle de solicitud
         async function verDetalleSolicitud(idSolicitud) {
             try {
-                const response = await securityManager.authenticatedRequest(`/api/incidencias/${idSolicitud}`);
+                const response = await securityManager.makeRequest(`/api/incidencias/${idSolicitud}`);
                 if (response.ok) {
                     const solicitud = await response.json();
                     mostrarDetalleSolicitud(solicitud);
@@ -983,7 +983,7 @@
         // Cargar estado general
         async function loadEstadoGeneral() {
             try {
-                const response = await securityManager.authenticatedRequest('/api/estadisticas/cliente');
+                const response = await securityManager.makeRequest('/api/estadisticas/cliente');
                 if (response.ok) {
                     const stats = await response.json();
                     updateEstadisticasCards(stats);

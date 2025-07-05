@@ -32,14 +32,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             logger.info("Processing request in JwtAuthenticationFilter for URL: {}", request.getRequestURI());
             String jwt = getJwtFromRequest(request);
+            String authorizationHeader = request.getHeader("Authorization");
+ logger.info("Authorization header value: {}", authorizationHeader);
 
             if (StringUtils.hasText(jwt)) {
                 logger.debug("JWT token extracted: {}", jwt);
                 if (tokenProvider.validateToken(jwt)) {
                     logger.debug("JWT token is valid.");
+ boolean isValid = tokenProvider.validateToken(jwt);
+ logger.info("Token validation result: {}", isValid);
+
+ if (isValid) {
                 Authentication authentication = tokenProvider.getAuthentication(jwt);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.debug("Authentication set in SecurityContextHolder for user: {}", authentication.getName());
+ if (authentication != null) {
+ logger.info("Authentication object obtained from token. Setting authentication in SecurityContextHolder.");
+ SecurityContextHolder.getContext().setAuthentication(authentication);
+ logger.info("Authentication set in SecurityContextHolder for user: {}", authentication.getName());
+ } else {
+ logger.warn("Authentication object is null after token validation.");
+ }
+ }
                 } else {
                     logger.debug("JWT token is invalid.");
                 }
