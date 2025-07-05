@@ -74,8 +74,8 @@ class IncidentNotificationManager {
     // Conectar al WebSocket - MEJORADO
     connect() {
         try {
-            const wsUrl = `${this.config.wsUrl}?token=${securityManager.getToken()}`;
-            console.log('Conectando WebSocket a:', wsUrl.replace(/token=[^&]+/, 'token=***')); // Log seguro
+            const wsUrl = this.config.wsUrl;
+            console.log('Conectando WebSocket a:', wsUrl);
 
             this.socket = new WebSocket(wsUrl);
 

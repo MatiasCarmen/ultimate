@@ -638,7 +638,7 @@
         async function loadMisIncidencias() {
             try {
                 securityManager.showLoading('Cargando mis incidencias...');
-                // Usar makeRequest para incluir el token automáticamente
+                // Usar makeRequest para las llamadas a la API
                 const response = await securityManager.makeRequest('/api/incidencias/mis-incidencias');
                 if (response.ok) {
                     const incidencias = await response.json();
@@ -707,7 +707,7 @@
         // Cargar nuevas incidencias
         async function loadNuevasIncidencias() {
             try {
-                // Usar makeRequest para incluir el token automáticamente
+                // Usar makeRequest para las llamadas a la API
                 const response = await securityManager.makeRequest('/api/incidencias/nuevas');
                 if (response.ok) {
                     const incidencias = await response.json();
@@ -779,7 +779,7 @@
             if (!currentIncidenciaId) return;
 
             try {
-                // Usar makeRequest para incluir el token automáticamente
+                // Usar makeRequest para las llamadas a la API
                 const response = await securityManager.makeRequest(`/api/incidencias/${currentIncidenciaId}/asignar`, {
                     method: 'POST'
                 });
@@ -802,7 +802,7 @@
         // Ver detalle de incidencia
         async function verDetalleIncidencia(idIncidencia) {
             try {
-                // Usar makeRequest para incluir el token automáticamente
+                // Usar makeRequest para las llamadas a la API
                 const response = await securityManager.makeRequest(`/api/incidencias/${idIncidencia}`);
                 if (response.ok) {
                     const incidencia = await response.json();
@@ -856,7 +856,7 @@
         async function cambiarEstadoRapido(idIncidencia, nuevoEstado) {
             try {
                 const response = await securityManager.authenticatedRequest(`/api/incidencias/${idIncidencia}/estado`, {
-                    // Usar makeRequest para incluir el token automáticamente
+                    // Usar makeRequest para las llamadas a la API
                     method: 'PUT', // Asegurar que el método sea PUT
                     body: JSON.stringify({ estado: nuevoEstado })
                 });

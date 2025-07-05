@@ -3,6 +3,7 @@ package com.mycompany.vcsystems.api.controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.mycompany.vcsystems.modelo.repository.SolicitudRepuestoRepository;
 import com.mycompany.vcsystems.modelo.entidades.SolicitudRepuesto;
 import jakarta.validation.Valid;

@@ -1,34 +1,16 @@
 // Manejo de autenticación y seguridad
 class SecurityManager {
     constructor() {
-        this.token = localStorage.getItem('jwt_token');
         this.userInfo = JSON.parse(localStorage.getItem('user_info') || null);
         this.apiBase = '/api';
         this.toastManager = new ToastManager(); // Usar el módulo común de tostadas
         this.checkAuthentication();
-
-        // Configurar interceptor para requests
-        this.setupHttpInterceptor();
     }
 
     // Verificar si el usuario está autenticado
     isAuthenticated() {
         // Consideramos autenticado si tenemos la información del usuario
         return this.userInfo !== null && this.userInfo.idUsuario != null;
-    }
-
-    // Verificar si el token ha expirado
-    isTokenExpired() {
-        if (!this.token) return true;
-
-        try {
-            const payload = JSON.parse(atob(this.token.split('.')[1]));
-            const currentTime = Date.now() / 1000;
-            return payload.exp < currentTime;
-        } catch (error) {
-            console.error('Error verificando token:', error);
-            return true;
-        }
     }
 
     // Login del usuario
@@ -124,7 +106,6 @@ class SecurityManager {
     // Logout del usuario
     logout() { // Simplificado para remover solo info del usuario
         this.userInfo = null;
-        localStorage.removeItem('jwt_token');
         localStorage.removeItem('user_info');
         window.location.href = '/pages/login.html';
     }
@@ -180,10 +161,6 @@ class SecurityManager {
         }
         return this.userInfo.rol === requiredRole;
     }
-
-    // Configurar interceptor HTTP para incluir token
-    // Eliminado: setupHttpInterceptor ya no es necesario sin JWT
-    setupHttpInterceptor() { /* Logic removed */ }
 
     // Eliminado: authenticatedRequest ya no es necesario sin JWT auth header
     // Si necesitas enviar idUsuario/rol a la API, crea un nuevo método.

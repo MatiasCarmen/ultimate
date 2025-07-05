@@ -4,7 +4,6 @@ import com.mycompany.vcsystems.modelo.service.UsuarioService;
 import com.mycompany.vcsystems.modelo.repository.UsuarioRepository;
 import com.mycompany.vcsystems.modelo.entidades.Usuario;
 import com.mycompany.vcsystems.modelo.entidades.Usuario.Rol;
-import com.mycompany.vcsystems.security.JwtTokenProvider;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,6 @@ public class UsuarioServiceTest {
 
     @MockBean
     private UsuarioRepository usuarioRepository;
-
-    @MockBean
-    private JwtTokenProvider jwtTokenProvider;
 
     @BeforeEach
     public void setup() {
