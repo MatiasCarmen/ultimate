@@ -22,6 +22,7 @@ public class SolicitudController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('TECNICO', 'GERENTE')")
+    public ResponseEntity<SolicitudRepuesto> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody SolicitudRepuesto solicitud) {
         return solicitudRepository.findById(id)
