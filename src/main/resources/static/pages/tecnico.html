@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Técnico - VCSystems</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Estilos personalizados -->
+    <link href="../css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-tools text-primary me-2"></i>VCSystems
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#mis-incidencias" data-section="mis-incidencias">
+                            <i class="fas fa-tasks me-1"></i>Mis Incidencias
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#nuevas" data-section="nuevas">
+                            <i class="fas fa-plus-circle me-1"></i>Nuevas
+                            <span class="badge bg-danger ms-1" id="nuevasCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#historial" data-section="historial">
+                            <i class="fas fa-history me-1"></i>Historial
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#estadisticas" data-section="estadisticas">
+                            <i class="fas fa-chart-line me-1"></i>Estadísticas
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="navbar-text me-3">
+                            <i class="fas fa-wifi me-1"></i>
+                            <span class="connection-status">Conectando...</span>
+                        </span>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown"
+                           role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" id="notificationsMenu">
+                            <li><h6 class="dropdown-header">Notificaciones Recientes</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="text-center text-muted p-3">No hay notificaciones</li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-center" href="#" onclick="notificationManager.markAllAsRead()">
+                                    <small>Marcar todas como leídas</small>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span id="userName">Técnico</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Perfil</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logout-btn"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="container-fluid mt-4">
+        <!-- Mis Incidencias Section -->
+        <div id="mis-incidencias-section" class="content-section">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="mb-3">
+                        <i class="fas fa-tasks text-primary me-2"></i>Mis Incidencias Asignadas
+                        <small class="text-muted">Casos bajo mi responsabilidad</small>
+                    </h2>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-outline-primary" onclick="refreshMisIncidencias()">
+                        <i class="fas fa-sync-alt me-1"></i>Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resumen rápido -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-2x mb-2"></i>
+                            <h3 id="pendientesCount">0</h3>
+                            <p class="mb-0">Pendientes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-cogs fa-2x mb-2"></i>
+                            <h3 id="enProcesoCount">0</h3>
+                            <p class="mb-0">En Proceso</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <h3 id="resueltasCount">0</h3>
+                            <p class="mb-0">Resueltas Hoy</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-star fa-2x mb-2"></i>
+                            <h3 id="prioridadAltaCount">0</h3>
+                            <p class="mb-0">Prioridad Alta</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros rápidos -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-2">
+                            <select class="form-select form-select-sm" id="filtroEstadoMis">
+                                <option value="">Todos los estados</option>
+                                <option value="ASIGNADA">Asignada</option>
+                                <option value="EN_PROCESO">En Proceso</option>
+                                <option value="RESUELTA">Resuelta</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select form-select-sm" id="filtroPrioridadMis">
+                                <option value="">Todas las prioridades</option>
+                                <option value="ALTA">Alta</option>
+                                <option value="MEDIA">Media</option>
+                                <option value="BAJA">Baja</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" placeholder="Buscar por cliente o descripción..." id="buscarMis">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-primary w-100" onclick="aplicarFiltrosMis()">
+                                <i class="fas fa-filter me-1"></i>Filtrar
+                            </button>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-secondary" onclick="exportarMisIncidencias()">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-outline-info" onclick="verCalendario()">
+                                    <i class="fas fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Mis Incidencias -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Lista de Incidencias
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="misIncidenciasTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Prioridad</th>
+                                    <th>Fecha Asignación</th>
+                                    <th>Tiempo Transcurrido</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Cargando incidencias...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nuevas Incidencias Section -->
+        <div id="nuevas-section" class="content-section d-none">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="mb-3">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>Incidencias Nuevas
+                        <small class="text-muted">Sin asignar - disponibles para tomar</small>
+                    </h2>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-outline-primary" onclick="refreshNuevas()">
+                        <i class="fas fa-sync-alt me-1"></i>Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="nuevasIncidenciasTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Descripción</th>
+                                    <th>Prioridad</th>
+                                    <th>Fecha Creación</th>
+                                    <th>Tiempo Esperando</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Cargando incidencias nuevas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial Section -->
+        <div id="historial-section" class="content-section d-none">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2 class="mb-3">
+                        <i class="fas fa-history text-primary me-2"></i>Historial de Incidencias
+                        <small class="text-muted">Casos completados y cerrados</small>
+                    </h2>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary" onclick="exportarHistorial()">
+                            <i class="fas fa-download me-1"></i>Exportar
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="refreshHistorial()">
+                            <i class="fas fa-sync-alt me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de historial -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Período</label>
+                            <select class="form-select" id="periodoHistorial">
+                                <option value="7">Últimos 7 días</option>
+                                <option value="30" selected>Últimos 30 días</option>
+                                <option value="90">Últimos 3 meses</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Desde</label>
+                            <input type="date" class="form-control" id="fechaDesde" disabled>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Hasta</label>
+                            <input type="date" class="form-control" id="fechaHasta" disabled>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cliente</label>
+                            <select class="form-select" id="filtroClienteHistorial">
+                                <option value="">Todos los clientes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button class="btn btn-primary" onclick="aplicarFiltrosHistorial()">
+                                    <i class="fas fa-search me-1"></i>Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="historialTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Descripción</th>
+                                    <th>Estado Final</th>
+                                    <th>Fecha Resolución</th>
+                                    <th>Tiempo Total</th>
+                                    <th>Calificación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Cargando historial...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Section -->
+        <div id="estadisticas-section" class="content-section d-none">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="mb-3">
+                        <i class="fas fa-chart-line text-primary me-2"></i>Mis Estadísticas
+                        <small class="text-muted">Análisis de rendimiento y productividad</small>
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Métricas de rendimiento -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-trophy text-warning fa-2x mb-2"></i>
+                            <h4 id="totalResueltas">0</h4>
+                            <p class="text-muted mb-0">Total Resueltas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-clock text-info fa-2x mb-2"></i>
+                            <h4 id="tiempoPromedio">0h</h4>
+                            <p class="text-muted mb-0">Tiempo Promedio</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-star text-success fa-2x mb-2"></i>
+                            <h4 id="calificacionPromedio">0</h4>
+                            <p class="text-muted mb-0">Calificación</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-chart-line text-primary fa-2x mb-2"></i>
+                            <h4 id="eficiencia">0%</h4>
+                            <p class="text-muted mb-0">Eficiencia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row mb-4">
+                <div class="col-lg-8 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-area me-2"></i>Incidencias Resueltas por Semana
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="rendimientoChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>Por Prioridad
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="prioridadChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de objetivos -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-target me-2"></i>Objetivos del Mes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Incidencias Resueltas</span>
+                                        <span class="fw-bold">15/20</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Tiempo Promedio (horas)</span>
+                                        <span class="fw-bold">2.5/4</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" style="width: 62.5%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Calificación Promedio</span>
+                                        <span class="fw-bold">4.5/5.0</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Primera Respuesta (min)</span>
+                                        <span class="fw-bold">8/15</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" style="width: 53%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles de Incidencia -->
+    <div class="modal fade" id="detalleIncidenciaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Detalles de Incidencia #<span id="modalIncidenciaId"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detalleIncidenciaContent">
+                        <!-- El contenido se cargará dinámicamente -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-warning" id="cambiarEstadoBtn">
+                        <i class="fas fa-edit me-1"></i>Cambiar Estado
+                    </button>
+                    <button type="button" class="btn btn-primary" id="agregarComentarioBtn">
+                        <i class="fas fa-comment me-1"></i>Agregar Comentario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tomar Incidencia -->
+    <div class="modal fade" id="tomarIncidenciaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-hand-paper me-2"></i>Tomar Incidencia
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que quieres tomar esta incidencia?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Al tomar esta incidencia, se asignará automáticamente a tu usuario y su estado cambiará a "En Proceso".
+                    </div>
+                    <div id="incidenciaParaTomarInfo">
+                        <!-- Información de la incidencia -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="confirmarTomarBtn">
+                        <i class="fas fa-check me-1"></i>Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts personalizados -->
+    <script src="../js/security.js"></script>
+    <script src="../js/incident-notifications.js"></script>
+
+    <script>
+        // Variables globales
+        let rendimientoChart = null;
+        let prioridadChart = null;
+        let currentIncidenciaId = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación y rol
+            if (!securityManager.isAuthenticated() || !securityManager.hasRole('TECNICO')) {
+                securityManager.logout();
+                return;
+            }
+
+            // Mostrar información del usuario
+            const userInfo = securityManager.getUserInfo();
+            document.getElementById('userName').textContent = userInfo.nombre || 'Técnico';
+
+            // Configurar navegación
+            setupNavigation();
+
+            // Cargar mis incidencias por defecto
+            loadMisIncidencias();
+
+            // Configurar filtros de historial
+            setupHistorialFilters();
+
+            // Configurar actualización automática
+            setupAutoRefresh();
+        });
+
+        // Configurar navegación entre secciones
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('[data-section]');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const section = this.dataset.section;
+                    showSection(section);
+
+                    // Actualizar nav activo
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Mostrar sección específica
+        function showSection(sectionName) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+
+            // Mostrar sección solicitada
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.remove('d-none');
+
+                // Cargar datos específicos de la sección
+                switch(sectionName) {
+                    case 'mis-incidencias':
+                        loadMisIncidencias();
+                        break;
+                    case 'nuevas':
+                        loadNuevasIncidencias();
+                        break;
+                    case 'historial':
+                        loadHistorial();
+                        break;
+                    case 'estadisticas':
+                        loadEstadisticas();
+                        break;
+                }
+            }
+        }
+
+        // Cargar mis incidencias
+        async function loadMisIncidencias() {
+            try {
+                securityManager.showLoading('Cargando mis incidencias...');
+
+                const response = await securityManager.authenticatedRequest('/api/incidencias/mis-incidencias');
+                if (response.ok) {
+                    const incidencias = await response.json();
+                    updateMisIncidenciasTable(incidencias);
+                    updateResumenCards(incidencias);
+                } else {
+                    throw new Error('Error cargando incidencias');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                securityManager.showAlert('Error cargando mis incidencias: ' + error.message, 'danger');
+            } finally {
+                securityManager.hideLoading();
+            }
+        }
+
+        // Actualizar tabla de mis incidencias
+        function updateMisIncidenciasTable(incidencias) {
+            const tbody = document.querySelector('#misIncidenciasTable tbody');
+
+            if (incidencias.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No tienes incidencias asignadas</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = incidencias.map(inc => `
+                <tr onclick="verDetalleIncidencia(${inc.idIncidencia})" style="cursor: pointer;">
+                    <td><strong>#${inc.idIncidencia}</strong></td>
+                    <td>${inc.cliente?.nombreEmpresa || 'N/A'}</td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 200px;" title="${inc.descripcion}">
+                            ${inc.descripcion}
+                        </div>
+                    </td>
+                    <td><span class="badge bg-${getEstadoColor(inc.estado)}">${inc.estado}</span></td>
+                    <td><span class="badge bg-${getPrioridadColor(inc.prioridad)}">${inc.prioridad}</span></td>
+                    <td>${securityManager.formatDate(inc.fechaAsignacion || inc.fechaCreacion)}</td>
+                    <td>${calculateTimeElapsed(inc.fechaAsignacion || inc.fechaCreacion)}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="event.stopPropagation(); verDetalleIncidencia(${inc.idIncidencia})" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-success" onclick="event.stopPropagation(); cambiarEstadoRapido(${inc.idIncidencia}, 'RESUELTA')" title="Marcar como resuelta">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Actualizar cards de resumen
+        function updateResumenCards(incidencias) {
+            const pendientes = incidencias.filter(i => i.estado === 'ASIGNADA').length;
+            const enProceso = incidencias.filter(i => i.estado === 'EN_PROCESO').length;
+            const resueltas = incidencias.filter(i => i.estado === 'RESUELTA' && isToday(i.fechaResolucion)).length;
+            const prioridadAlta = incidencias.filter(i => i.prioridad === 'ALTA' && i.estado !== 'RESUELTA' && i.estado !== 'CERRADA').length;
+
+            document.getElementById('pendientesCount').textContent = pendientes;
+            document.getElementById('enProcesoCount').textContent = enProceso;
+            document.getElementById('resueltasCount').textContent = resueltas;
+            document.getElementById('prioridadAltaCount').textContent = prioridadAlta;
+        }
+
+        // Cargar nuevas incidencias
+        async function loadNuevasIncidencias() {
+            try {
+                const response = await securityManager.authenticatedRequest('/api/incidencias/nuevas');
+                if (response.ok) {
+                    const incidencias = await response.json();
+                    updateNuevasIncidenciasTable(incidencias);
+                    updateNuevasCount(incidencias.length);
+                }
+            } catch (error) {
+                console.error('Error cargando nuevas incidencias:', error);
+            }
+        }
+
+        // Actualizar tabla de nuevas incidencias
+        function updateNuevasIncidenciasTable(incidencias) {
+            const tbody = document.querySelector('#nuevasIncidenciasTable tbody');
+
+            if (incidencias.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay incidencias nuevas disponibles</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = incidencias.map(inc => `
+                <tr>
+                    <td><strong>#${inc.idIncidencia}</strong></td>
+                    <td>${inc.cliente?.nombreEmpresa || 'N/A'}</td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 250px;" title="${inc.descripcion}">
+                            ${inc.descripcion}
+                        </div>
+                    </td>
+                    <td><span class="badge bg-${getPrioridadColor(inc.prioridad)}">${inc.prioridad}</span></td>
+                    <td>${securityManager.formatDate(inc.fechaCreacion)}</td>
+                    <td>${calculateTimeElapsed(inc.fechaCreacion)}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="tomarIncidencia(${inc.idIncidencia})" title="Tomar incidencia">
+                            <i class="fas fa-hand-paper me-1"></i>Tomar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Actualizar contador de nuevas
+        function updateNuevasCount(count) {
+            const badge = document.getElementById('nuevasCount');
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'inline' : 'none';
+        }
+
+        // Tomar incidencia
+        function tomarIncidencia(idIncidencia) {
+            currentIncidenciaId = idIncidencia;
+
+            // Cargar información de la incidencia
+            document.getElementById('incidenciaParaTomarInfo').innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h6>Incidencia #${idIncidencia}</h6>
+                        <p class="mb-0">Será asignada a tu usuario</p>
+                    </div>
+                </div>
+            `;
+
+            // Mostrar modal
+            new bootstrap.Modal(document.getElementById('tomarIncidenciaModal')).show();
+        }
+
+        // Confirmar tomar incidencia
+        document.getElementById('confirmarTomarBtn').addEventListener('click', async function() {
+            if (!currentIncidenciaId) return;
+
+            try {
+                const response = await securityManager.authenticatedRequest(`/api/incidencias/${currentIncidenciaId}/asignar`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    securityManager.showAlert('Incidencia tomada exitosamente', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('tomarIncidenciaModal')).hide();
+
+                    // Actualizar listas
+                    loadNuevasIncidencias();
+                    loadMisIncidencias();
+                } else {
+                    throw new Error('Error tomando la incidencia');
+                }
+            } catch (error) {
+                securityManager.showAlert('Error: ' + error.message, 'danger');
+            }
+        });
+
+        // Ver detalle de incidencia
+        async function verDetalleIncidencia(idIncidencia) {
+            try {
+                const response = await securityManager.authenticatedRequest(`/api/incidencias/${idIncidencia}`);
+                if (response.ok) {
+                    const incidencia = await response.json();
+                    mostrarDetalleIncidencia(incidencia);
+                }
+            } catch (error) {
+                securityManager.showAlert('Error cargando detalles: ' + error.message, 'danger');
+            }
+        }
+
+        // Mostrar detalle en modal
+        function mostrarDetalleIncidencia(incidencia) {
+            document.getElementById('modalIncidenciaId').textContent = incidencia.idIncidencia;
+
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información General</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Cliente:</strong></td><td>${incidencia.cliente?.nombreEmpresa || 'N/A'}</td></tr>
+                            <tr><td><strong>Estado:</strong></td><td><span class="badge bg-${getEstadoColor(incidencia.estado)}">${incidencia.estado}</span></td></tr>
+                            <tr><td><strong>Prioridad:</strong></td><td><span class="badge bg-${getPrioridadColor(incidencia.prioridad)}">${incidencia.prioridad}</span></td></tr>
+                            <tr><td><strong>Fecha Creación:</strong></td><td>${securityManager.formatDate(incidencia.fechaCreacion)}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Descripción</h6>
+                        <p class="border p-2 rounded">${incidencia.descripcion}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Historial de Cambios</h6>
+                        <div class="border p-2 rounded" style="max-height: 200px; overflow-y: auto;">
+                            ${incidencia.comentarios ? incidencia.comentarios.map(c => `
+                                <div class="mb-2">
+                                    <small class="text-muted">${securityManager.formatDate(c.fecha)} - ${c.usuario}</small>
+                                    <p class="mb-0">${c.comentario}</p>
+                                </div>
+                            `).join('<hr>') : 'No hay comentarios'}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detalleIncidenciaContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('detalleIncidenciaModal')).show();
+        }
+
+        // Cambiar estado rápido
+        async function cambiarEstadoRapido(idIncidencia, nuevoEstado) {
+            try {
+                const response = await securityManager.authenticatedRequest(`/api/incidencias/${idIncidencia}/estado`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+
+                if (response.ok) {
+                    securityManager.showAlert(`Estado cambiado a ${nuevoEstado}`, 'success');
+                    loadMisIncidencias();
+                } else {
+                    throw new Error('Error cambiando estado');
+                }
+            } catch (error) {
+                securityManager.showAlert('Error: ' + error.message, 'danger');
+            }
+        }
+
+        // Cargar historial
+        function loadHistorial() {
+            console.log('Cargando historial...');
+            // Implementar carga de historial
+        }
+
+        // Cargar estadísticas
+        function loadEstadisticas() {
+            console.log('Cargando estadísticas...');
+            // Implementar carga de estadísticas y gráficos
+            loadRendimientoChart();
+        }
+
+        // Cargar gráfico de rendimiento
+        function loadRendimientoChart() {
+            const ctx = document.getElementById('rendimientoChart').getContext('2d');
+            if (rendimientoChart) rendimientoChart.destroy();
+
+            rendimientoChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+                    datasets: [{
+                        label: 'Incidencias Resueltas',
+                        data: [5, 8, 12, 15],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Configurar filtros de historial
+        function setupHistorialFilters() {
+            const periodoSelect = document.getElementById('periodoHistorial');
+            const fechaDesde = document.getElementById('fechaDesde');
+            const fechaHasta = document.getElementById('fechaHasta');
+
+            periodoSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    fechaDesde.disabled = false;
+                    fechaHasta.disabled = false;
+                } else {
+                    fechaDesde.disabled = true;
+                    fechaHasta.disabled = true;
+                }
+            });
+        }
+
+        // Configurar actualización automática
+        function setupAutoRefresh() {
+            // Actualizar cada 30 segundos si estamos en la sección activa
+            setInterval(() => {
+                const activeSection = document.querySelector('.content-section:not(.d-none)');
+                if (activeSection) {
+                    const sectionId = activeSection.id;
+                    if (sectionId === 'mis-incidencias-section') {
+                        loadMisIncidencias();
+                    } else if (sectionId === 'nuevas-section') {
+                        loadNuevasIncidencias();
+                    }
+                }
+            }, 30000);
+        }
+
+        // Refrescar secciones
+        function refreshMisIncidencias() {
+            loadMisIncidencias();
+        }
+
+        function refreshNuevas() {
+            loadNuevasIncidencias();
+        }
+
+        function refreshHistorial() {
+            loadHistorial();
+        }
+
+        // Funciones de utilidad
+        function getEstadoColor(estado) {
+            const colors = {
+                'PENDIENTE': 'warning',
+                'ASIGNADA': 'info',
+                'EN_PROCESO': 'primary',
+                'RESUELTA': 'success',
+                'CERRADA': 'secondary'
+            };
+            return colors[estado] || 'secondary';
+        }
+
+        function getPrioridadColor(prioridad) {
+            const colors = {
+                'BAJA': 'success',
+                'MEDIA': 'warning',
+                'ALTA': 'danger'
+            };
+            return colors[prioridad] || 'secondary';
+        }
+
+        function calculateTimeElapsed(fecha) {
+            const now = new Date();
+            const past = new Date(fecha);
+            const diff = now - past;
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) {
+                return `${days}d ${hours % 24}h`;
+            } else {
+                return `${hours}h`;
+            }
+        }
+
+        function isToday(fecha) {
+            if (!fecha) return false;
+            const today = new Date();
+            const date = new Date(fecha);
+            return date.toDateString() === today.toDateString();
+        }
+
+        // Aplicar filtros
+        function aplicarFiltrosMis() {
+            // Implementar filtros para mis incidencias
+            console.log('Aplicando filtros...');
+        }
+
+        function aplicarFiltrosHistorial() {
+            // Implementar filtros para historial
+            console.log('Aplicando filtros de historial...');
+        }
+
+        // Exportar datos
+        function exportarMisIncidencias() {
+            securityManager.showAlert('Preparando exportación...', 'info');
+        }
+
+        function exportarHistorial() {
+            securityManager.showAlert('Preparando exportación...', 'info');
+        }
+
+        function verCalendario() {
+            securityManager.showAlert('Vista de calendario próximamente...', 'info');
+        }
+
+        // Escuchar actualizaciones de incidencias
+        document.addEventListener('incidenciasUpdated', function() {
+            const activeSection = document.querySelector('.content-section:not(.d-none)');
+            if (activeSection) {
+                const sectionId = activeSection.id;
+                if (sectionId === 'mis-incidencias-section') {
+                    loadMisIncidencias();
+                } else if (sectionId === 'nuevas-section') {
+                    loadNuevasIncidencias();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

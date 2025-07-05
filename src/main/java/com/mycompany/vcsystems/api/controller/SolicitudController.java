@@ -1,0 +1,46 @@
+package com.mycompany.vcsystems.api.controller;
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.mycompany.vcsystems.modelo.repository.SolicitudRepuestoRepository;
+import com.mycompany.vcsystems.modelo.entidades.SolicitudRepuesto;
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/solicitudes")
+public class SolicitudController {
+
+    @Autowired
+    private SolicitudRepuestoRepository solicitudRepository;
+
+    @PostMapping
+    @PreAuthorize("hasRole('TECNICO')")
+    public ResponseEntity<SolicitudRepuesto> crear(@Valid @RequestBody SolicitudRepuesto solicitud) {
+        SolicitudRepuesto nuevaSolicitud = solicitudRepository.save(solicitud);
+        return ResponseEntity.status(201).body(nuevaSolicitud);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('TECNICO', 'GERENTE')")
+    public ResponseEntity<?> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody SolicitudRepuesto solicitud) {
+        return solicitudRepository.findById(id)
+            .map(existing -> {
+                solicitud.setIdSolicitud(id);
+                return ResponseEntity.ok(solicitudRepository.save(solicitud));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('GERENTE')")
+    public ResponseEntity<?> listarPorEstado(@RequestParam(required = false) String estado) {
+        if (estado != null) {
+            return ResponseEntity.ok(solicitudRepository.findByEstado(estado));
+        }
+        return ResponseEntity.ok(solicitudRepository.findAll());
+    }
+}

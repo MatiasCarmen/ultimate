@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+<h2>Login</h2>
+<form id="loginForm">
+    <label>Correo: <input type="email" id="correo" required /></label><br/><br/>
+    <label>Contraseña: <input type="password" id="contrasena" required /></label><br/><br/>
+    <button type="submit">Ingresar</button>
+</form>
+<pre id="result"></pre>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const correo = document.getElementById('correo').value;
+        const contrasena = document.getElementById('contrasena').value;
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ correo, contrasena })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Unauthorized');
+            return res.json();
+        })
+        .then(data => document.getElementById('result').textContent = 'Token: ' + data.token)
+        .catch(err => document.getElementById('result').textContent = 'Error: ' + err.message);
+    });
+</script>
+</body>
+</html>
+
