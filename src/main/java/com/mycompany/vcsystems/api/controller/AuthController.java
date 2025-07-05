@@ -3,6 +3,7 @@ package com.mycompany.vcsystems.api.controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import com.mycompany.vcsystems.modelo.entidades.Usuario.Rol;
 import com.mycompany.vcsystems.modelo.service.UsuarioService;
 import com.mycompany.vcsystems.modelo.entidades.Usuario; // Asegúrate de importar la clase Usuario
 import jakarta.validation.Valid;
@@ -65,6 +66,25 @@ public class AuthController {
                 .body(Map.of("error", "Error interno del servidor", "success", false));
         }
     }
+
+    @PostMapping(\"/register/cliente\")
+    public ResponseEntity<?> registerCliente(@Valid @RequestBody RegisterClienteRequest request) {
+ try {
+            Usuario nuevoUsuario = new Usuario();
+ nuevoUsuario.setNombre(request.getNombre());
+ nuevoUsuario.setCorreo(request.getCorreo());
+ nuevoUsuario.setContrasena(request.getContrasena());
+ nuevoUsuario.setRol(Rol.CLIENTE); // Establecer el rol como CLIENTE
+
+            Usuario usuarioRegistrado = usuarioService.registrarUsuario(nuevoUsuario); // Esto también crea el Cliente asociado
+
+ return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRegistrado);
+        } catch (ValidationException e) {
+ return ResponseEntity.badRequest().body(Map.of(\"error\", e.getMessage(), \"success\", false));
+        } catch (Exception e) {
+ return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(\"error\", \"Error interno del servidor\", \"success\", false));
+        }
+    }
     @Data
     static class LoginRequest {
         @Email(message = "Formato de email inválido")
@@ -89,6 +109,18 @@ public class AuthController {
         private String refreshToken;
     }
 
+ @Data
+    static class RegisterClienteRequest {
+ @NotBlank(message = \"El nombre es requerido\")
+ private String nombre;
+
+ @Email(message = \"Formato de email inválido\")
+ @NotBlank(message = \"El correo es requerido\")
+ private String correo;
+
+ @NotBlank(message = \"La contraseña es requerida\")
+ private String contrasena; // La validación de formato de contraseña se hará en UsuarioService
+    }
     /**
      * Enmascara datos sensibles para logs seguros (reutilizar del NotificacionService)
      */

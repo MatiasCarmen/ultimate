@@ -642,9 +642,8 @@
             const userInfo = securityManager.getUserInfo();
             document.getElementById('userName').textContent = userInfo.nombre || 'Cliente';
 
-            // Cargar información de la empresa
-            loadEmpresaInfo();
-
+            // Mostrar nombre de la empresa (usando el nombre del usuario por ahora)
+            document.getElementById('empresaName').textContent = userInfo.nombreEmpresa || userInfo.nombre || 'Mi Empresa';
             // Configurar navegación
             setupNavigation();
 
@@ -868,23 +867,11 @@
             }
         }
 
-        // Cargar información de la empresa
-        async function loadEmpresaInfo() {
-            try {
-                const response = await securityManager.makeRequest('/api/cliente/info');
-                if (response.ok) {
-                    const info = await response.json();
-                    document.getElementById('empresaName').textContent = info.nombreEmpresa || 'Mi Empresa';
-                }
-            } catch (error) {
-                console.log('No se pudo cargar información de la empresa');
-            }
-        }
-
         // Cargar solicitudes
         async function loadSolicitudes() {
             try {
-                const response = await securityManager.makeRequest('/api/incidencias/cliente');
+ const userInfo = securityManager.getUserInfo();
+                const response = await securityManager.makeRequest(`/api/incidencias/cliente?userId=${userInfo.id}`);
                 if (response.ok) {
                     const solicitudes = await response.json();
                     updateSolicitudesTable(solicitudes);
@@ -984,7 +971,7 @@
         // Cargar estado general
         async function loadEstadoGeneral() {
             try {
-                const response = await securityManager.makeRequest('/api/estadisticas/cliente');
+                const response = await securityManager.makeRequest('/api/incidencias/estadisticas');
                 if (response.ok) {
                     const stats = await response.json();
                     updateEstadisticasCards(stats);
