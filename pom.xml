@@ -172,12 +172,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+ <mainClass>com.mycompany.vcsystems.VcsystemsApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
-                    </excludes>
+ </excludes>
                 </configuration>
             </plugin>
         </plugins>

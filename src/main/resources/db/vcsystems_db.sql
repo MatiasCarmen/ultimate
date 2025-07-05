@@ -82,9 +82,9 @@ CREATE TABLE solicitud_repuesto (
 -- Inserting usuarios de prueba con contraseñas BCrypt hasheadas
 -- Contraseña para todos: "password123"
 INSERT INTO usuario (rol, nombre, correo, contrasena, creado_at, actualizado_at) VALUES
-('GERENTE', 'Gerente General', 'gerente@vcsystems.com', '$2a$10$N9qo8uLOickgx2ZMRJWYNOeH6isr/DPWgHOGOgzVUeKRCqBXLyU6e', NOW(6), NOW(6)),
-('TECNICO', 'Técnico Soporte', 'tecnico@vcsystems.com', '$2a$10$N9qo8uLOickgx2ZMRJWYNOeH6isr/DPWgHOGOgzVUeKRCqBXLyU6e', NOW(6), NOW(6)),
-('CLIENTE', 'Cliente Demo', 'cliente@empresa.com', '$2a$10$N9qo8uLOickgx2ZMRJWYNOeH6isr/DPWgHOGOgzVUeKRCqBXLyU6e', NOW(6), NOW(6));
+('GERENTE', 'Gerente General', 'gerente@vcsystems.com', 'password123', NOW(6), NOW(6)),
+('TECNICO', 'Técnico Soporte', 'tecnico@vcsystems.com', 'password123', NOW(6), NOW(6)),
+('CLIENTE', 'Cliente Demo', 'cliente@empresa.com', 'password123', NOW(6), NOW(6));
 
 -- Inserting clientes de prueba
 INSERT INTO cliente (id_usuario, nombre_empresa, direccion_empresa, creado_at, actualizado_at) VALUES

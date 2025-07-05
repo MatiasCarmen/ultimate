@@ -19,7 +19,7 @@ const getEnvironment = () => {
 // Configuraciones por entorno
 const configs = {
     development: {
-        API_BASE_URL: 'http://localhost:8080/api',
+        API_BASE_URL: 'http://localhost:8081/api',
         WS_URL: 'ws://localhost:8081/ws/notifications',
         NOTIFICATION_SOUND_URL: '/sounds/notification.wav',
         DEBUG_MODE: true,

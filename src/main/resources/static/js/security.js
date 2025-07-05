@@ -187,7 +187,7 @@ class SecurityManager {
 
         window.fetch = async (url, options = {}) => {
             // Solo agregar token para requests a la API
-            if (url.startsWith(this.apiBase) || url.startsWith('/api')) {
+            if (url.startsWith(this.apiBase) || url.startsWith('/api') || url.startsWith('/pages/')) {
                 options.headers = {
                     ...options.headers,
                     'Authorization': `Bearer ${this.token}`,

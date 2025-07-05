@@ -49,23 +49,21 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login.html", "/js/**", "/css/**").permitAll()
                         // Endpoints públicos de autenticación
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        // Rutas de páginas HTML por rol
+                        .requestMatchers("/pages/gerente.html").hasAnyRole("GERENTE", "ADMIN")
+                        .requestMatchers("/pages/tecnico.html").hasRole("TECNICO")
+                        .requestMatchers("/pages/cliente.html").hasRole("CLIENTE")
                         // Rutas específicas por rol
                         .requestMatchers("/api/reportes/**").hasAnyRole("GERENTE", "ADMIN")
                         .requestMatchers("/api/incidencias/**").hasAnyRole("ADMIN", "GERENTE", "TECNICO", "CLIENTE")
                         .requestMatchers("/api/solicitudes/**").hasAnyRole("ADMIN", "TECNICO", "GERENTE")
                         // Cualquier otra ruta requiere autenticación
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable());
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean
