@@ -2,7 +2,6 @@ package com.mycompany.vcsystems.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,22 +13,33 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.mycompany.vcsystems.security.JwtAuthenticationFilter;
+import com.mycompany.vcsystems.security.JwtTokenProvider;
+import com.mycompany.vcsystems.security.TokenService;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@EnableAsync // Habilitar procesamiento asíncrono para eventos
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final TokenService tokenService;
+
+    // Inyección por constructor para evitar dependencias circulares
+    public SecurityConfig(TokenService tokenService) {
+        this.tokenService = tokenService;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // Crear el filtro JWT localmente usando los beans disponibles
+        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(tokenService);
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())

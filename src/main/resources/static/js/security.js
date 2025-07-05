@@ -4,6 +4,7 @@ class SecurityManager {
         this.token = localStorage.getItem('jwt_token');
         this.userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
         this.apiBase = '/api';
+        this.toastManager = new ToastManager(); // Usar el módulo común de tostadas
 
         // Verificar autenticación al cargar
         this.checkAuthentication();
@@ -31,12 +32,12 @@ class SecurityManager {
         }
     }
 
-    // Login del usuario
+    // Login del usuario - MEJORADO con manejo robusto de errores
     async login(email, password) {
         try {
             this.showLoading('Iniciando sesión...');
 
-            const response = await fetch(`${this.apiBase}/auth/login`, {
+            const response = await this.makeRequest(`${this.apiBase}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,7 +56,8 @@ class SecurityManager {
                 localStorage.setItem('user_info', JSON.stringify(this.userInfo));
 
                 this.hideLoading();
-                this.redirectByRole();
+                this.toastManager.success('¡Inicio de sesión exitoso!', 2000);
+                setTimeout(() => this.redirectByRole(), 1000);
                 return { success: true, data };
             } else {
                 this.hideLoading();
@@ -63,8 +65,63 @@ class SecurityManager {
             }
         } catch (error) {
             this.hideLoading();
-            this.showAlert('Error de autenticación: ' + error.message, 'danger');
+            this.handleLoginError(error);
             return { success: false, error: error.message };
+        }
+    }
+
+    // NUEVO: Manejo específico de errores de login
+    handleLoginError(error) {
+        let errorMessage = 'Error de autenticación';
+        let errorDetails = error.message;
+
+        if (error.name === 'NetworkError' || error.message.includes('fetch')) {
+            errorMessage = 'Error de conexión';
+            errorDetails = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+        } else if (error.message.includes('401') || error.message.includes('Credenciales')) {
+            errorMessage = 'Credenciales inválidas';
+            errorDetails = 'El email o contraseña son incorrectos.';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Error del servidor';
+            errorDetails = 'Error interno del servidor. Intenta nuevamente en unos minutos.';
+        }
+
+        this.toastManager.error(errorDetails, 5000, { title: errorMessage });
+    }
+
+    // NUEVO: Método para realizar requests con manejo robusto de errores
+    async makeRequest(url, options = {}) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+
+            clearTimeout(timeoutId);
+
+            // Verificar si la respuesta es válida
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return response;
+        } catch (error) {
+            clearTimeout(timeoutId);
+
+            if (error.name === 'AbortError') {
+                throw new Error('La solicitud tardó demasiado tiempo. Verifica tu conexión.');
+            } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error('Error de red. Verifica tu conexión a internet.');
+            }
+
+            throw error;
         }
     }
 
@@ -150,27 +207,72 @@ class SecurityManager {
         };
     }
 
-    // Realizar request autenticado
+    // Realizar request autenticado - MEJORADO
     async authenticatedRequest(url, options = {}) {
         if (!this.isAuthenticated()) {
-            throw new Error('Usuario no autenticado');
+            this.toastManager.warning('Sesión expirada. Redirigiendo al login...', 3000);
+            setTimeout(() => this.logout(), 2000);
+            return null;
         }
 
-        const response = await fetch(url, {
-            ...options,
-            headers: {
-                ...options.headers,
-                'Authorization': `Bearer ${this.token}`,
-                'Content-Type': 'application/json'
+        try {
+            const response = await this.makeRequest(url, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+
+            return response;
+        } catch (error) {
+            return this.handleAuthenticatedRequestError(error, url, options);
+        }
+    }
+
+    // NUEVO: Manejo específico de errores en requests autenticados
+    async handleAuthenticatedRequestError(error, originalUrl, originalOptions) {
+        if (error.message.includes('401')) {
+            // Token inválido o expirado
+            this.toastManager.warning('Sesión expirada. Redirigiendo al login...', 3000);
+            setTimeout(() => this.logout(), 2000);
+            return null;
+        } else if (error.message.includes('403')) {
+            this.toastManager.error('No tienes permisos para realizar esta acción', 4000);
+            return null;
+        } else if (error.message.includes('500')) {
+            this.toastManager.error('Error del servidor. Intenta nuevamente.', 4000);
+            return null;
+        } else if (error.message.includes('conexión') || error.message.includes('red')) {
+            // Error de red - mostrar opción de reintentar
+            this.showNetworkErrorRetry(originalUrl, originalOptions);
+            return null;
+        } else {
+            this.toastManager.error(`Error inesperado: ${error.message}`, 5000);
+            throw error;
+        }
+    }
+
+    // NUEVO: Mostrar error de red con opción de reintentar
+    showNetworkErrorRetry(url, options) {
+        const retryToast = this.toastManager.error(
+            'Error de conexión. Haz clic para reintentar.',
+            0, // No auto-remover
+            { title: 'Sin conexión' }
+        );
+
+        retryToast.style.cursor = 'pointer';
+        retryToast.addEventListener('click', async () => {
+            this.toastManager.removeToast(retryToast);
+            this.toastManager.info('Reintentando...', 2000);
+
+            try {
+                await this.authenticatedRequest(url, options);
+            } catch (error) {
+                console.error('Error en reintento:', error);
             }
         });
-
-        if (response.status === 401) {
-            this.logout();
-            throw new Error('Sesión expirada');
-        }
-
-        return response;
     }
 
     // Obtener información del usuario

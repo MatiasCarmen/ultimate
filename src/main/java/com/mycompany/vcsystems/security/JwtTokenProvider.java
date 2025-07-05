@@ -1,101 +1,86 @@
 package com.mycompany.vcsystems.security;
 
-import io.jsonwebtoken.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import com.mycompany.vcsystems.modelo.entidades.Usuario;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.HashSet;
 
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final TokenService tokenService;
 
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
+    // Lista negra de tokens invalidados
+    private Set<String> blacklistedTokens = new HashSet<>();
 
-    @Value("${jwt.refresh-expiration}")
-    private long refreshExpiration;
-
-    public String createToken(String username) {
-        return generateToken(username, null);
+    // Inyección por constructor para evitar dependencias circulares
+    public JwtTokenProvider(TokenService tokenService) {
+        this.tokenService = tokenService;
     }
 
-    public String generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+    public String createToken(String username, Collection<? extends GrantedAuthority> authorities) {
+        return tokenService.generateToken(username, authorities);
+    }
 
-        return Jwts.builder()
-                .setSubject(username)
-                .claim("roles", authorities.stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.joining(",")))
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+    public String createTokenForUser(Usuario user) {
+        List<GrantedAuthority> authorities = List.of(
+            new SimpleGrantedAuthority("ROLE_" + user.getRol().name())
+        );
+        return tokenService.generateToken(user.getCorreo(), authorities);
     }
 
     public String generateRefreshToken(String username) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshExpiration);
-
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+        return tokenService.generateRefreshToken(username);
     }
 
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
+        return tokenService.getUsernameFromToken(token);
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
+        String username = tokenService.getUsernameFromToken(token);
+        String roles = tokenService.getRolesFromToken(token);
 
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("roles").toString().split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        Collection<? extends GrantedAuthority> authorities;
+        if (roles != null && !roles.isEmpty()) {
+            authorities = Arrays.stream(roles.split(","))
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+        } else {
+            authorities = List.of();
+        }
 
-        return new UsernamePasswordAuthenticationToken(claims.getSubject(), "", authorities);
+        return new UsernamePasswordAuthenticationToken(username, "", authorities);
     }
 
     public boolean validateToken(String token) {
-        try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
-            return true;
-        } catch (SignatureException | MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+        // Verificar si el token está en la lista negra
+        if (blacklistedTokens.contains(token)) {
             return false;
         }
+        return tokenService.validateToken(token);
     }
 
-    public boolean isTokenExpired(String token) {
-        try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(jwtSecret)
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getExpiration().before(new Date());
-        } catch (ExpiredJwtException e) {
-            return true;
-        }
+    public String refrescarToken(String oldToken) {
+        return tokenService.refreshToken(oldToken);
+    }
+
+    // Método para invalidar tokens (lista negra)
+    public void invalidateToken(String token) {
+        blacklistedTokens.add(token);
+    }
+
+    // Método para limpiar tokens expirados de la lista negra
+    public void cleanupExpiredTokens() {
+        blacklistedTokens.removeIf(token -> !tokenService.validateToken(token));
     }
 }

@@ -1,7 +1,6 @@
 package com.mycompany.vcsystems.modelo.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,7 +9,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import com.mycompany.vcsystems.modelo.repository.UsuarioRepository;
 import com.mycompany.vcsystems.modelo.entidades.Usuario;
-import com.mycompany.vcsystems.security.JwtTokenProvider;
 import jakarta.validation.ValidationException;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -20,17 +18,17 @@ import java.util.Collections;
 @Transactional
 public class UsuarioService implements UserDetailsService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Usar inyección de dependencias en lugar de crear instancia
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private static final Pattern PASSWORD_PATTERN =
         Pattern.compile("^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$");
+
+    // Inyección por constructor para evitar dependencias circulares
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public Usuario registrarUsuario(Usuario usuario) {
         validarContrasena(usuario.getContrasena());
@@ -59,12 +57,8 @@ public class UsuarioService implements UserDetailsService {
             .orElse(null);
     }
 
-    public String refrescarToken(String oldToken) {
-        if (jwtTokenProvider.validateToken(oldToken)) {
-            String username = jwtTokenProvider.getUsernameFromToken(oldToken);
-            return jwtTokenProvider.createToken(username);
-        }
-        throw new IllegalArgumentException("Token inválido o expirado");
+    public Optional<Usuario> findByCorreo(String correo) {
+        return usuarioRepository.findByCorreo(correo);
     }
 
     @Override

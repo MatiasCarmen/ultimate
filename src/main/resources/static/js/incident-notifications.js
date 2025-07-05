@@ -1,39 +1,91 @@
 // Manejo de notificaciones en tiempo real con WebSocket
 class IncidentNotificationManager {
-    constructor() {
+    constructor(config = {}) {
+        // Configuración externalizada
+        this.config = {
+            wsUrl: config.wsUrl || this.getWebSocketUrl(),
+            reconnectAttempts: config.reconnectAttempts || 5,
+            reconnectDelay: config.reconnectDelay || 3000,
+            maxReconnectDelay: config.maxReconnectDelay || 30000,
+            notificationSoundUrl: config.notificationSoundUrl || null, // URL externa para sonido
+            maxNotifications: config.maxNotifications || 50,
+            ...config
+        };
+
         this.socket = null;
         this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
-        this.reconnectDelay = 3000;
+        this.reconnectDelay = this.config.reconnectDelay;
         this.notifications = [];
         this.isConnected = false;
+        this.toastManager = new ToastManager(); // Usar módulo común de tostadas
+        this.notificationSound = null;
 
         this.init();
     }
 
+    // NUEVO: Obtener URL del WebSocket desde configuración o variables de entorno
+    getWebSocketUrl() {
+        // Prioridad: 1) Variable de entorno, 2) Meta tag, 3) Configuración por defecto
+        const envUrl = window.APP_CONFIG?.WS_URL;
+        const metaTag = document.querySelector('meta[name="ws-url"]');
+        const metaUrl = metaTag?.getAttribute('content');
+
+        return envUrl || metaUrl || `ws://${window.location.hostname}:8081/ws/notifications`;
+    }
+
+    // NUEVO: Cargar sonido de notificación desde archivo externo
+    async loadNotificationSound() {
+        if (this.config.notificationSoundUrl) {
+            try {
+                this.notificationSound = new Audio(this.config.notificationSoundUrl);
+                this.notificationSound.preload = 'auto';
+                console.log('Sonido de notificación cargado desde:', this.config.notificationSoundUrl);
+            } catch (error) {
+                console.warn('No se pudo cargar el sonido de notificación:', error);
+                this.createDefaultNotificationSound();
+            }
+        } else {
+            this.createDefaultNotificationSound();
+        }
+    }
+
+    // NUEVO: Crear sonido de notificación por defecto (data URL como fallback)
+    createDefaultNotificationSound() {
+        const dataUrl = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhCjs2hqmMhYU...'; // Sonido corto y simple
+        try {
+            this.notificationSound = new Audio(dataUrl);
+        } catch (error) {
+            console.warn('No se pudo crear sonido de notificación por defecto:', error);
+        }
+    }
+
     // Inicializar conexión WebSocket
-    init() {
+    async init() {
         if (!securityManager.isAuthenticated()) {
             console.log('Usuario no autenticado, no se iniciará WebSocket');
             return;
         }
 
+        await this.loadNotificationSound();
         this.connect();
         this.setupEventListeners();
     }
 
-    // Conectar al WebSocket
+    // Conectar al WebSocket - MEJORADO
     connect() {
         try {
-            const wsUrl = `ws://localhost:8081/ws/notifications?token=${securityManager.getToken()}`;
+            const wsUrl = `${this.config.wsUrl}?token=${securityManager.getToken()}`;
+            console.log('Conectando WebSocket a:', wsUrl.replace(/token=[^&]+/, 'token=***')); // Log seguro
+
             this.socket = new WebSocket(wsUrl);
 
             this.socket.onopen = (event) => {
-                console.log('WebSocket conectado');
+                console.log('WebSocket conectado exitosamente');
                 this.isConnected = true;
                 this.reconnectAttempts = 0;
+                this.reconnectDelay = this.config.reconnectDelay; // Resetear delay
                 this.updateConnectionStatus(true);
-                this.showToast('Conectado al sistema de notificaciones', 'success');
+                this.toastManager.success('Conectado al sistema de notificaciones', 3000);
             };
 
             this.socket.onmessage = (event) => {
@@ -42,6 +94,7 @@ class IncidentNotificationManager {
                     this.handleNotification(notification);
                 } catch (error) {
                     console.error('Error procesando notificación:', error);
+                    this.toastManager.warning('Error procesando notificación recibida', 3000);
                 }
             };
 
@@ -50,8 +103,10 @@ class IncidentNotificationManager {
                 this.isConnected = false;
                 this.updateConnectionStatus(false);
 
-                if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
+                if (!event.wasClean && this.reconnectAttempts < this.config.reconnectAttempts) {
                     this.scheduleReconnect();
+                } else if (this.reconnectAttempts >= this.config.reconnectAttempts) {
+                    this.toastManager.error('No se pudo mantener conexión con notificaciones', 5000);
                 }
             };
 
@@ -63,19 +118,24 @@ class IncidentNotificationManager {
 
         } catch (error) {
             console.error('Error conectando WebSocket:', error);
+            this.toastManager.error('Error al conectar notificaciones', 4000);
             this.scheduleReconnect();
         }
     }
 
-    // Programar reconexión
+    // Programar reconexión - MEJORADO
     scheduleReconnect() {
-        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            this.showToast('No se pudo conectar al sistema de notificaciones', 'warning');
+        if (this.reconnectAttempts >= this.config.reconnectAttempts) {
+            this.toastManager.warning(
+                `Sin conexión a notificaciones tras ${this.config.reconnectAttempts} intentos`,
+                0, // No auto-remover
+                { title: 'Sistema offline' }
+            );
             return;
         }
 
         this.reconnectAttempts++;
-        console.log(`Intentando reconectar en ${this.reconnectDelay}ms (intento ${this.reconnectAttempts})`);
+        console.log(`Reintentando conexión en ${this.reconnectDelay}ms (intento ${this.reconnectAttempts}/${this.config.reconnectAttempts})`);
 
         setTimeout(() => {
             if (!this.isConnected) {
@@ -83,206 +143,101 @@ class IncidentNotificationManager {
             }
         }, this.reconnectDelay);
 
-        // Incrementar delay para próximos intentos
-        this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);
+        // Incrementar delay exponencialmente
+        this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, this.config.maxReconnectDelay);
     }
 
-    // Manejar notificación recibida
+    // Manejar notificación recibida - MEJORADO
     handleNotification(notification) {
         console.log('Notificación recibida:', notification);
 
-        // Agregar a lista de notificaciones
-        this.notifications.unshift({
-            ...notification,
-            timestamp: new Date(),
-            read: false
-        });
-
-        // Limitar número de notificaciones almacenadas
-        if (this.notifications.length > 50) {
-            this.notifications = this.notifications.slice(0, 50);
+        // Validar estructura de notificación
+        if (!notification || typeof notification !== 'object') {
+            console.warn('Notificación inválida recibida:', notification);
+            return;
         }
 
-        // Mostrar notificación según tipo
-        this.displayNotification(notification);
+        // Agregar timestamp y estado
+        const processedNotification = {
+            id: notification.id || Date.now(),
+            title: notification.title || 'Nueva notificación',
+            message: notification.message || '',
+            type: notification.type || 'info',
+            timestamp: new Date(),
+            read: false,
+            ...notification
+        };
 
-        // Actualizar badge de notificaciones
-        this.updateNotificationBadge();
+        // Agregar a lista de notificaciones
+        this.notifications.unshift(processedNotification);
 
-        // Actualizar tabla si es relevante
-        this.updateRelevantTable(notification);
+        // Limitar número de notificaciones almacenadas
+        if (this.notifications.length > this.config.maxNotifications) {
+            this.notifications = this.notifications.slice(0, this.config.maxNotifications);
+        }
+
+        // Mostrar notificación visual
+        this.showNotificationToast(processedNotification);
 
         // Reproducir sonido si está habilitado
         this.playNotificationSound();
+
+        // Actualizar contador en UI
+        this.updateNotificationBadge();
+
+        // Disparar evento personalizado
+        this.dispatchNotificationEvent(processedNotification);
     }
 
-    // Mostrar notificación visual
-    displayNotification(notification) {
-        const { tipo, titulo, mensaje, prioridad } = notification;
-
-        let toastType = 'info';
-        let icon = 'info-circle';
-
-        switch (tipo) {
-            case 'INCIDENCIA_NUEVA':
-                toastType = 'primary';
-                icon = 'plus-circle';
-                break;
-            case 'INCIDENCIA_ASIGNADA':
-                toastType = 'info';
-                icon = 'user-check';
-                break;
-            case 'INCIDENCIA_ACTUALIZADA':
-                toastType = 'warning';
-                icon = 'edit';
-                break;
-            case 'INCIDENCIA_RESUELTA':
-                toastType = 'success';
-                icon = 'check-circle';
-                break;
-            case 'INCIDENCIA_CERRADA':
-                toastType = 'secondary';
-                icon = 'times-circle';
-                break;
-            default:
-                toastType = 'info';
-                icon = 'bell';
-        }
-
-        // Ajustar tipo según prioridad
-        if (prioridad === 'ALTA') {
-            toastType = 'danger';
-        }
-
-        this.showToast(mensaje, toastType, titulo, icon, 8000);
-    }
-
-    // Mostrar toast personalizado
-    showToast(message, type = 'info', title = 'Notificación', icon = 'bell', duration = 5000) {
-        const toastContainer = this.getToastContainer();
-        const toastId = 'toast-' + Date.now();
-
-        const toastHtml = `
-            <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${duration}">
-                <div class="toast-header">
-                    <i class="fas fa-${icon} me-2 text-${type}"></i>
-                    <strong class="me-auto">${title}</strong>
-                    <small class="text-muted">ahora</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">
-                    ${message}
-                </div>
-            </div>
-        `;
-
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
-
-        // Limpiar después de ocultar
-        toastElement.addEventListener('hidden.bs.toast', () => {
-            toastElement.remove();
-        });
-    }
-
-    // Obtener o crear contenedor de toasts
-    getToastContainer() {
-        let container = document.getElementById('toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toast-container';
-            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-            container.style.zIndex = '1055';
-            document.body.appendChild(container);
-        }
-        return container;
-    }
-
-    // Actualizar badge de notificaciones
-    updateNotificationBadge() {
-        const unreadCount = this.notifications.filter(n => !n.read).length;
-        const badges = document.querySelectorAll('.notification-badge');
-
-        badges.forEach(badge => {
-            if (unreadCount > 0) {
-                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        });
-
-        // Actualizar título de la página si hay notificaciones
-        if (unreadCount > 0) {
-            document.title = `(${unreadCount}) ${this.getOriginalTitle()}`;
-        } else {
-            document.title = this.getOriginalTitle();
-        }
-    }
-
-    // Obtener título original de la página
-    getOriginalTitle() {
-        const titles = {
-            'gerente.html': 'Panel de Gerente - VCSystems',
-            'tecnico.html': 'Panel de Técnico - VCSystems',
-            'cliente.html': 'Panel de Cliente - VCSystems'
+    // NUEVO: Mostrar notificación usando el módulo común de tostadas
+    showNotificationToast(notification) {
+        const options = {
+            title: notification.title
         };
 
-        const currentPage = window.location.pathname.split('/').pop();
-        return titles[currentPage] || 'VCSystems';
-    }
-
-    // Actualizar tabla relevante
-    updateRelevantTable(notification) {
-        const { tipo } = notification;
-
-        // Recargar tabla de incidencias si existe
-        if (typeof window.reloadIncidenciasTable === 'function') {
-            window.reloadIncidenciasTable();
-        }
-
-        // Actualizar específicamente según el tipo
-        switch (tipo) {
-            case 'INCIDENCIA_NUEVA':
-            case 'INCIDENCIA_ASIGNADA':
-            case 'INCIDENCIA_ACTUALIZADA':
-            case 'INCIDENCIA_RESUELTA':
-            case 'INCIDENCIA_CERRADA':
-                this.refreshIncidenciasData();
+        switch (notification.type) {
+            case 'incident':
+                this.toastManager.warning(notification.message, 5000, options);
                 break;
+            case 'success':
+                this.toastManager.success(notification.message, 4000, options);
+                break;
+            case 'error':
+                this.toastManager.error(notification.message, 6000, options);
+                break;
+            default:
+                this.toastManager.info(notification.message, 4000, options);
         }
     }
 
-    // Refrescar datos de incidencias
-    async refreshIncidenciasData() {
-        try {
-            // Solo refrescar si estamos en una página que muestra incidencias
-            const currentPage = window.location.pathname.split('/').pop();
-            if (['gerente.html', 'tecnico.html', 'cliente.html'].includes(currentPage)) {
-                // Disparar evento personalizado para que las páginas puedan escuchar
-                document.dispatchEvent(new CustomEvent('incidenciasUpdated'));
-            }
-        } catch (error) {
-            console.error('Error refrescando datos:', error);
-        }
-    }
-
-    // Reproducir sonido de notificación
+    // NUEVO: Reproducir sonido de notificación
     playNotificationSound() {
-        if (this.isNotificationSoundEnabled()) {
-            // Crear elemento audio temporal
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaBkOa2+7CeDIGnzz/'); // Tono simple
-            audio.volume = 0.3;
-            audio.play().catch(e => console.log('No se pudo reproducir sonido:', e));
+        if (this.notificationSound && this.isNotificationSoundEnabled()) {
+            try {
+                this.notificationSound.currentTime = 0; // Reiniciar sonido
+                this.notificationSound.play().catch(error => {
+                    console.warn('No se pudo reproducir sonido de notificación:', error);
+                });
+            } catch (error) {
+                console.warn('Error reproduciendo sonido:', error);
+            }
         }
     }
 
-    // Verificar si el sonido está habilitado
+    // NUEVO: Verificar si el sonido está habilitado
     isNotificationSoundEnabled() {
-        return localStorage.getItem('notification_sound') !== 'false';
+        return localStorage.getItem('notification-sound') !== 'false';
+    }
+
+    // NUEVO: Alternar sonido de notificaciones
+    toggleNotificationSound() {
+        const enabled = this.isNotificationSoundEnabled();
+        localStorage.setItem('notification-sound', !enabled);
+
+        const message = enabled ? 'Sonido de notificaciones deshabilitado' : 'Sonido de notificaciones habilitado';
+        this.toastManager.info(message, 2000);
+
+        return !enabled;
     }
 
     // Actualizar estado de conexión en UI

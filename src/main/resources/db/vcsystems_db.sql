@@ -123,3 +123,6 @@ SELECT 'CLIENTES:' as tabla;
 SELECT * FROM cliente;
 SELECT 'INCIDENCIAS:' as tabla;
 SELECT id_incidencia, descripcion, estado, prioridad FROM incidencia;
+
+SELECT correo, contrasena FROM usuario;
+SELECT * FROM usuario;
