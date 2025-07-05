@@ -22,7 +22,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -30,27 +30,27 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Recursos estáticos y login
-                .requestMatchers("/", "/login.html", "/js/**", "/css/**").permitAll()
-                // Endpoints públicos de autenticación
-                .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
-                // Rutas específicas por rol
-                .requestMatchers("/api/reportes/**").hasAnyRole("GERENTE", "ADMIN")
-                .requestMatchers("/api/incidencias/**").hasAnyRole("ADMIN", "GERENTE", "TECNICO", "CLIENTE")
-                .requestMatchers("/api/solicitudes/**").hasAnyRole("ADMIN", "TECNICO", "GERENTE")
-                // Cualquier otra ruta requiere autenticación
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .httpBasic(basic -> basic.disable())
-            .formLogin(form -> form.disable())
-            .build();
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Recursos estáticos y login
+                        .requestMatchers("/", "/login.html", "/js/**", "/css/**").permitAll()
+                        // Endpoints públicos de autenticación
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        // Rutas específicas por rol
+                        .requestMatchers("/api/reportes/**").hasAnyRole("GERENTE", "ADMIN")
+                        .requestMatchers("/api/incidencias/**").hasAnyRole("ADMIN", "GERENTE", "TECNICO", "CLIENTE")
+                        .requestMatchers("/api/solicitudes/**").hasAnyRole("ADMIN", "TECNICO", "GERENTE")
+                        // Cualquier otra ruta requiere autenticación
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable());
+
+        return http.build();
     }
 
     @Bean
@@ -62,10 +62,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:8081"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
-        configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

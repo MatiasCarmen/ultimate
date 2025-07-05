@@ -3,15 +3,22 @@ package com.mycompany.vcsystems.modelo.service;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.transaction.annotation.Transactional;
 import com.mycompany.vcsystems.modelo.repository.UsuarioRepository;
 import com.mycompany.vcsystems.modelo.entidades.Usuario;
 import com.mycompany.vcsystems.security.JwtTokenProvider;
 import jakarta.validation.ValidationException;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.Collections;
 
 @Service
-public class UsuarioService {
+@Transactional
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -58,5 +65,17 @@ public class UsuarioService {
             return jwtTokenProvider.createToken(username);
         }
         throw new IllegalArgumentException("Token inválido o expirado");
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + correo));
+
+        return new org.springframework.security.core.userdetails.User(
+            usuario.getCorreo(),
+            usuario.getContrasena(),
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()))
+        );
     }
 }
