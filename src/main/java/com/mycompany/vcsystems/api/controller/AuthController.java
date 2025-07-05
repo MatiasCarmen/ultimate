@@ -29,31 +29,33 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("token", token);
-                    response.put("success", true);
+ try {
+ return usuarioService.autenticarUsuario(request.getCorreo(), request.getContrasena())
+ .map(user -> {
+ // Ya no generamos ni devolvemos un token JWT
+ Map<String, Object> response = new HashMap<>();
+ response.put("success", true);
 
-                    // Agregar información del usuario que espera el frontend
-                    Map<String, Object> usuario = new HashMap<>();
-                    usuario.put("idUsuario", user.getIdUsuario());
-                    usuario.put("nombre", user.getNombre());
-                    usuario.put("correo", user.getCorreo());
-                    usuario.put("rol", user.getRol().toString());
-                    response.put("usuario", usuario);
+ // Agregar información del usuario que espera el frontend
+ Map<String, Object> usuario = new HashMap<>();
+ usuario.put("idUsuario", user.getIdUsuario());
+ usuario.put("nombre", user.getNombre());
+ usuario.put("correo", user.getCorreo());
+ usuario.put("rol", user.getRol().toString()); // Asegúrate de que user.getRol() devuelve un Enum o un String
+ response.put("usuario", usuario);
 
-                    // Corregir rutas de redirección para que coincidan con el frontend
-                    response.put("redirect", switch (user.getRol()) {
-                        case GERENTE -> "/pages/gerente.html";
-                        case TECNICO -> "/pages/tecnico.html";
-                        case CLIENTE -> "/pages/cliente.html";
-                        default -> "/pages/login.html";
-                    });
+ // La redirección se manejará en el frontend basándose en la URL recibida
+ response.put("redirect", switch (user.getRol()) {
+ case GERENTE -> "/pages/gerente.html";
+ case TECNICO -> "/pages/tecnico.html";
+ case CLIENTE -> "/pages/cliente.html";
+ // Asegúrate de tener un caso por defecto o manejar otros roles si existen
+ default -> "/pages/login.html"; // Redirigir al login si el rol no es reconocido
+ });
 
-                    return ResponseEntity.ok(response);
-                })
-                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Credenciales inválidas", "success", false)));
+ return ResponseEntity.ok(response);
+ })
+ .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Credenciales inválidas", "success", false)));
         } catch (Exception e) {
             // Registrar el stack trace completo para depuración y monitoreo
             log.error("Error interno durante el proceso de login para usuario: {}",
@@ -63,13 +65,6 @@ public class AuthController {
                 .body(Map.of("error", "Error interno del servidor", "success", false));
         }
     }
-
-    // Endpoint para verificar el estado del servidor
-    @GetMapping("/status")
-    public ResponseEntity<?> status() {
-        return ResponseEntity.ok(Map.of("status", "OK", "service", "VCSystems Auth"));
-    }
-
     @Data
     static class LoginRequest {
         @Email(message = "Formato de email inválido")

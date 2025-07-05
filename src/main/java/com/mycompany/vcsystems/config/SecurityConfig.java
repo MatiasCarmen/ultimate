@@ -13,10 +13,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.scheduling.annotation.EnableAsync;
-
-import com.mycompany.vcsystems.security.JwtAuthenticationFilter;
-import com.mycompany.vcsystems.security.JwtTokenProvider;
 import com.mycompany.vcsystems.security.TokenService;
 
 import java.util.List;
@@ -24,22 +20,19 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-@EnableAsync // Habilitar procesamiento asíncrono para eventos
 public class SecurityConfig {
 
     private final TokenService tokenService;
 
     // Inyección por constructor para evitar dependencias circulares
+    // Aunque TokenService podría no ser necesario si no hay lógica JWT,
+    // lo mantenemos por ahora para evitar romper otras partes inesperadamente.
     public SecurityConfig(TokenService tokenService) {
         this.tokenService = tokenService;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Crear el filtro JWT localmente usando los beans disponibles
-        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(tokenService);
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
-
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -47,19 +40,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Recursos estáticos y login
                         .requestMatchers("/", "/login.html", "/js/**", "/css/**").permitAll()
-                        // Endpoints públicos de autenticación
-                        .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
-                        // Rutas de páginas HTML por rol
-                        .requestMatchers("/pages/gerente.html").hasAnyRole("GERENTE", "ADMIN")
-                        .requestMatchers("/pages/tecnico.html").hasRole("TECNICO")
-                        .requestMatchers("/pages/cliente.html").hasRole("CLIENTE")
-                        // Rutas específicas por rol
-                        .requestMatchers("/api/reportes/**").hasAnyRole("GERENTE", "ADMIN")
-                        .requestMatchers("/api/incidencias/**").hasAnyRole("ADMIN", "GERENTE", "TECNICO", "CLIENTE")
-                        .requestMatchers("/api/solicitudes/**").hasAnyRole("ADMIN", "TECNICO", "GERENTE")
-                        // Cualquier otra ruta requiere autenticación
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                        // Permitir acceso a todas las demás rutas para simplificar en local
+                        .requestMatchers("/**").permitAll() // Permitir todo
+                        .anyRequest().permitAll()) // Asegurar que cualquier otra cosa también esté permitida
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable());
 
