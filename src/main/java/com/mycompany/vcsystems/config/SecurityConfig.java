@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,7 +16,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Bean
@@ -25,11 +23,9 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Recursos estáticos y login
-                        .requestMatchers("/", "/login.html", "/js/**", "/css/**").permitAll()
-                        // Permitir acceso a todas las demás rutas para simplificar en local
+ // Recursos estáticos y login
+ .requestMatchers("/", "/pages/**", "/js/**", "/css/**", "/api/**").permitAll()
                         .requestMatchers("/**").permitAll() // Permitir todo
                         .anyRequest().permitAll()) // Asegurar que cualquier otra cosa también esté permitida
                 .httpBasic(basic -> basic.disable())
