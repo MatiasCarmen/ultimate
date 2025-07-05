@@ -95,6 +95,18 @@
 
     <!-- Contenido Principal -->
     <div class="container-fluid mt-4">
+        <!-- Saludo de bienvenida -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-light border-0 shadow-sm">
+                    <h4 class="mb-0 text-primary">
+                        <i class="fas fa-hand-wave me-2"></i>¡Hola, <span id="greetingUserName">Cliente</span>!
+                        <small class="text-muted d-block mt-1">Bienvenido a tu panel de control</small>
+                    </h4>
+                </div>
+            </div>
+        </div>
+
         <!-- Nueva Solicitud Section -->
         <div id="nueva-solicitud-section" class="content-section">
             <div class="row mb-4">
@@ -640,6 +652,7 @@
             // Mostrar información del usuario
             const userInfo = securityManager.getUserInfo();
             document.getElementById('userName').textContent = userInfo.nombre || 'Cliente';
+            document.getElementById('greetingUserName').textContent = userInfo.nombre || 'Cliente';
 
             // Cargar información de la empresa
             loadEmpresaInfo();
