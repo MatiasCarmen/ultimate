@@ -8,11 +8,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 import com.mycompany.vcsystems.modelo.repository.UsuarioRepository;
 import com.mycompany.vcsystems.modelo.entidades.Usuario;
+import com.mycompany.vcsystems.modelo.repository.ClienteRepository;
+import com.mycompany.vcsystems.modelo.entidades.Cliente;
 import jakarta.validation.ValidationException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.Collections;
 import org.slf4j.Logger;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.slf4j.LoggerFactory;
 
 @Service
@@ -21,18 +24,31 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
 
     private final UsuarioRepository usuarioRepository;
 
+    private final ClienteRepository clienteRepository;
+
+    private final PasswordEncoder passwordEncoder;
     private static final Pattern PASSWORD_PATTERN =
         Pattern.compile("^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$");
 
     private static final Logger log = LoggerFactory.getLogger(UsuarioService.class); // Manual Logger if no Lombok
 
     // Inyección por constructor para evitar dependencias circulares
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, ClienteRepository clienteRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.clienteRepository = clienteRepository;
+ this.passwordEncoder = passwordEncoder;
     }
 
     public Usuario registrarUsuario(Usuario usuario) {
-        // Note: Password is NOT being encoded. For local testing ONLY!
+        validarContrasena(usuario.getContrasena()); // Add password validation
+
+ usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+        usuario.setActivo(true); // Assuming new users are active by default
+        Usuario savedUsuario = usuarioRepository.save(usuario);
+
+        if (savedUsuario.getRol() == Usuario.Rol.CLIENTE) {
+            clienteRepository.save(new Cliente(savedUsuario)); // Create and save associated Client entity
+        }
         return usuarioRepository.save(usuario);
     }
 
@@ -45,11 +61,10 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
 
     public Optional<Usuario> autenticarUsuario(String correo, String rawPassword) {
         log.info("Attempting authentication for user: {}", correo);
-        // WARNING: Logging raw password is for temporary debugging ONLY. Remove in production!
-        log.info("Raw password entered: {}", rawPassword); 
 
         Optional<Usuario> userOpt = usuarioRepository.findByCorreo(correo);
-        boolean passwordMatches = userOpt.isPresent() && rawPassword.equals(userOpt.get().getContrasena()); // Direct comparison - INSECURE!
+ boolean passwordMatches = userOpt.isPresent() &&
+ passwordEncoder.matches(rawPassword, userOpt.get().getContrasena());
 
         log.info("Password match result for user {}: {}", correo, passwordMatches);
         if (passwordMatches) {
