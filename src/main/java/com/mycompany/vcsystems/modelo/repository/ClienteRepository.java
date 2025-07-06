@@ -5,5 +5,9 @@ import org.springframework.stereotype.Repository;
 import com.mycompany.vcsystems.modelo.entidades.Cliente;
 
 @Repository
+/**
+ *
+ * @author MatiasCarmen
+ */
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 }

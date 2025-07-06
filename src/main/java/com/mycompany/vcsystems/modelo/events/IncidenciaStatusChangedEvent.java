@@ -5,6 +5,10 @@ import com.mycompany.vcsystems.modelo.entidades.Incidencia;
 /**
  * Evento disparado cuando cambia el estado de una incidencia
  */
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class IncidenciaStatusChangedEvent extends IncidenciaEvent {
 
     private final Incidencia.Estado estadoAnterior;

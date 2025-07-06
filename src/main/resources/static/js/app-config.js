@@ -1,5 +1,5 @@
 /**
- * Configuración global de la aplicación VCSystems
+ * Configuración global de la aplicación 
  * Centraliza URLs, configuraciones de entorno y parámetros configurables
  */
 
@@ -48,7 +48,7 @@ const configs = {
 const currentEnvironment = getEnvironment();
 const config = configs[currentEnvironment];
 
-// Permitir override desde variables globales o meta tags
+// Permite override desde variables globales o meta tags
 const getConfigValue = (key, defaultValue) => {
     // 1. Verificar variable global
     if (window.ENV_CONFIG && window.ENV_CONFIG[key]) {

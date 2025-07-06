@@ -1,4 +1,4 @@
-// register.js
+// logica para crear nuevos usuarios
 
 document.addEventListener('DOMContentLoaded', function() {
     setupRegisterClientForm();
@@ -8,7 +8,7 @@ function setupRegisterClientForm() {
     const form = document.getElementById('registerClientForm');
     const submitBtn = document.getElementById('registerClientSubmitBtn');
 
-    // Add loading spinner to the button if it doesn't exist
+  
     if (!submitBtn.querySelector('.loading-spinner')) {
         const spinner = document.createElement('span');
         spinner.classList.add('spinner-border', 'spinner-border-sm', 'me-2', 'd-none', 'loading-spinner');
@@ -35,7 +35,7 @@ function setupRegisterClientForm() {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
 
-        // Show loading state
+   
         setRegisterLoading(true);
 
         try {
@@ -50,7 +50,7 @@ function setupRegisterClientForm() {
             if (response.ok) {
                 securityManager.showAlert('Cliente registrado exitosamente. Ahora puede iniciar sesión.', 'success');
                 form.reset();
-                // Remove validation classes
+           
                 form.querySelectorAll('.form-control').forEach(field => {
                     field.classList.remove('is-valid', 'is-invalid');
                     const invalidFeedback = field.nextElementSibling;
@@ -66,17 +66,17 @@ function setupRegisterClientForm() {
         } catch (error) {
             securityManager.showAlert('Error de red o inesperado al registrar cliente.', 'danger');
         } finally {
-            // Hide loading state
+           
             setRegisterLoading(false);
         }
     });
 
-     // Add blur event listeners for real-time validation
+    
      form.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
         field.addEventListener('blur', function() {
             validateRegisterField(this);
         });
-        // Also validate on input for email and text fields
+  
         if (field.type === 'email' || field.type === 'text') {
              field.addEventListener('input', function() {
                 validateRegisterField(this);
@@ -98,7 +98,7 @@ function validateRegisterForm() {
 
 function validateRegisterField(field) {
     const value = field.value.trim();
-    const invalidFeedback = field.nextElementSibling; // Assuming invalid-feedback is the next sibling
+    const invalidFeedback = field.nextElementSibling;
     let isValid = true;
 
     if (field.hasAttribute('required') && value === '') {
@@ -109,7 +109,7 @@ function validateRegisterField(field) {
             isValid = false;
         }
     }
-    // Add more specific validations here if needed (e.g., password complexity, min length)
+
 
     if (isValid) {
         field.classList.remove('is-invalid');

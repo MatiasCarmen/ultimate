@@ -20,6 +20,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 @SpringBootTest(classes = VcsystemsApplication.class)
 @AutoConfigureMockMvc
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class IncidenciaControllerTest {
 
     @Autowired

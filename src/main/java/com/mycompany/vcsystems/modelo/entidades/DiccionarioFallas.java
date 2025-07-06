@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class DiccionarioFallas {
 
     @Id

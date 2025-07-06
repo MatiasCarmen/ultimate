@@ -6,6 +6,10 @@ import org.springframework.boot.CommandLineRunner;
 
 
 @SpringBootApplication
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class VcsystemsApplication {
 
     public static void main(String[] args) {
@@ -13,3 +17,5 @@ public class VcsystemsApplication {
     }
 
 }
+
+//clase que se debe ejecutar para que empiece el programa :D

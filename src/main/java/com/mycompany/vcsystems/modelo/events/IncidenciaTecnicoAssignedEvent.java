@@ -6,6 +6,10 @@ import com.mycompany.vcsystems.modelo.entidades.Usuario;
 /**
  * Evento disparado cuando se asigna un técnico a una incidencia
  */
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class IncidenciaTecnicoAssignedEvent extends IncidenciaEvent {
 
     private final Usuario tecnico;

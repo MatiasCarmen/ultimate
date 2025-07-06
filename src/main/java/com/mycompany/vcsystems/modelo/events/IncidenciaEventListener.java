@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class IncidenciaEventListener {
 
     @Autowired

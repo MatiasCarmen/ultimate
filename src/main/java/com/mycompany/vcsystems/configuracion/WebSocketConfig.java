@@ -1,4 +1,4 @@
-package com.mycompany.vcsystems.config;
+package com.mycompany.vcsystems.configuracion;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -8,6 +8,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override

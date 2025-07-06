@@ -3,8 +3,12 @@ package com.mycompany.vcsystems.modelo.events;
 import com.mycompany.vcsystems.modelo.entidades.Incidencia;
 import org.springframework.context.ApplicationEvent;
 
+
+// Evento base para todas las operaciones relacionadas con incidencias
+
 /**
- * Evento base para todas las operaciones relacionadas con incidencias
+ *
+ * @author MatiasCarmen
  */
 public abstract class IncidenciaEvent extends ApplicationEvent {
 

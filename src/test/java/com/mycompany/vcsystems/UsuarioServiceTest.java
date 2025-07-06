@@ -13,6 +13,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.Optional;
 
 @SpringBootTest(classes = VcsystemsApplication.class)
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class UsuarioServiceTest {
 
     @Autowired

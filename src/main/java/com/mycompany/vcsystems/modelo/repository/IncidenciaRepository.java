@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+/**
+ *
+ * @author MatiasCarmen
+ */
 public interface IncidenciaRepository extends JpaRepository<Incidencia, Long> {
 
     @Query("SELECT i FROM Incidencia i WHERE i.estado = :estado")

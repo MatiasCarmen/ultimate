@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+/**
+ *
+ * @author MatiasCarmen
+ */
 public interface SolicitudRepuestoRepository extends JpaRepository<SolicitudRepuesto, Long> {
 
     @Query("SELECT s FROM SolicitudRepuesto s WHERE s.estado = :estado")

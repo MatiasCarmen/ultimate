@@ -13,338 +13,330 @@
     <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
-    <div class="login-container">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-4">
-                    <div class="card login-card fade-in">
-                        <div class="login-header">
-                            <i class="fas fa-shield-alt"></i>
-                            <h2>VCSystems</h2>
-                            <p class="mb-0">Sistema de Gestión de Incidencias</p>
-                        </div>
+<div class="login-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card login-card fade-in">
+                    <div class="login-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <h2>VCSystems</h2>
+                        <p class="mb-0">Sistema de Gestión de Incidencias</p>
+                    </div>
 
-                        <div class="card-body p-4">
-                            <form id="loginForm" novalidate>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">
-                                        <i class="fas fa-envelope me-2"></i>Correo Electrónico
-                                    </label>
-                                    <input type="email" class="form-control" id="email" name="email" required
-                                           placeholder="usuario@empresa.com">
-                                    <div class="invalid-feedback">
-                                        Por favor, ingrese un correo electrónico válido.
-                                    </div>
+                    <div class="card-body p-4">
+                        <form id="loginForm" novalidate>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i>Correo Electrónico
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" required
+                                       placeholder="usuario@empresa.com">
+                                <div class="invalid-feedback">
+                                    Por favor, ingrese un correo electrónico válido.
                                 </div>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">
-                                        <i class="fas fa-lock me-2"></i>Contraseña
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="password" name="password" required
-                                               placeholder="••••••••">
-                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <div class="invalid-feedback">
-                                        La contraseña es requerida.
-                                    </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>Contraseña
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" required
+                                           placeholder="••••••••">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
                                 </div>
-
-                                <div class="mb-3 form-check">
-                                    <input type="checkbox" class="form-check-input" id="rememberMe">
-                                    <label class="form-check-label" for="rememberMe">
-                                        Recordar sesión
-                                    </label>
+                                <div class="invalid-feedback">
+                                    La contraseña es requerida.
                                 </div>
+                            </div>
 
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">
+                                    Recordar sesión
+                                </label>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
                                         <span class="btn-text">
                                             <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
                                         </span>
-                                        <span class="loading-spinner d-none spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    </button>
-                                </div>
-                                <div class="d-grid mt-3">
-                                    <a href="/pages/registro.html" class="btn btn-outline-primary">
+                                    <span class="loading-spinner d-none spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                            <div class="d-grid mt-3">
+                                <a href="/pages/registro.html" class="btn btn-outline-primary">
                                         <span class="btn-text">
                                             <i class="fas fa-user-plus me-2"></i>Registrarse
                                         </span>
-                                        <span class="loading-spinner d-none"></span>
-                                    </button>
-                                </div>
-                            </form>
+                                    <span class="loading-spinner d-none"></span>
+                                </a>
+                            </div>
+                        </form>
 
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal de Ayuda -->
-    <div class="modal fade" id="helpModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-question-circle me-2"></i>¿Necesitas ayuda?
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal de Ayuda -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-question-circle me-2"></i>¿Necesitas ayuda?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li><strong>Contactar al administrador:</strong> admin@vcsystems.com</li>
+                    <li><strong>Llamar al soporte:</strong> +1 (555) 123-4567</li>
+                    <li><strong>Horario de atención:</strong> Lunes a Viernes, 8:00 AM - 6:00 PM</li>
+                </ul>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> Verifica que tu correo esté registrado en el sistema y que la contraseña sea correcta.
                 </div>
-                <div class="modal-body">
-                    <ul>
-                        <li><strong>Contactar al administrador:</strong> admin@vcsystems.com</li>
-                        <li><strong>Llamar al soporte:</strong> +1 (555) 123-4567</li>
-                        <li><strong>Horario de atención:</strong> Lunes a Viernes, 8:00 AM - 6:00 PM</li>
-                    </ul>
-                    <div class="alert alert-info">
-                        <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Tip:</strong> Verifica que tu correo esté registrado en el sistema y que la contraseña sea correcta.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Utilities and Security Scripts -->
-    <script src="/js/toast-utils.js"></script>
-    <script src="/js/security.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Utilities and Security Scripts -->
+<script src="/js/toast-utils.js"></script>
+<script src="/js/security.js"></script>
 
-    <script>
-        // Function to set up login form submission
-        // Inicialización de la página de login
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            const emailInput = document.getElementById('email');
-            const registerPasswordInput = document.getElementById('registerContrasena');
-            const passwordInput = document.getElementById('password');
-            const togglePassword = document.getElementById('togglePassword');
-            const loginBtn = document.getElementById('loginBtn');
+<script>
+    // Function to set up login form submission
+    // Inicialización de la página de login
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const registerPasswordInput = document.getElementById('registerContrasena');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const loginBtn = document.getElementById('loginBtn');
 
-            // Toggle mostrar/ocultar contraseña
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
+        // Toggle mostrar/ocultar contraseña
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
 
-                const icon = this.querySelector('i');
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
-            });
-
-            // Validación en tiempo real
-            emailInput.addEventListener('input', function() {
-                validateEmail(this);
-            });
-
-            passwordInput.addEventListener('input', function() {
-                validatePassword(this);
-            });
-
-            // Manejo del formulario de login
-            loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const email = emailInput.value.trim();
-                const password = passwordInput.value.trim();
-
-                // Validar formulario
-                if (!validateForm()) {
-                    return;
-                }
-
-                // Mostrar loading
-                setLoginLoading(true);
-
-                try {
-                    const result = await securityManager.login(email, password);
-
-                    if (result.success) {
-                        // Login exitoso - securityManager.redirectByRole() ya se encarga de la redirección
-                        securityManager.showAlert('¡Bienvenido al sistema!', 'success');
-                    } else {
-                        throw new Error(result.error || 'Error de autenticación');
-                    }
-                } catch (error) {
-                    securityManager.showAlert(error.message, 'danger');
-                    // Limpiar contraseña en caso de error
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                } finally {
-                    setLoginLoading(false);
-                }
-            });
+            const icon = this.querySelector('i');
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
         });
 
-        // Validar email
-        function validateEmail(input) {
+        // Validación en tiempo real
+        emailInput.addEventListener('input', function() {
+            validateEmail(this);
+        });
+
+        passwordInput.addEventListener('input', function() {
+            validatePassword(this);
+        });
+
+        // Manejo del formulario de login
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // Validar formulario
+            if (!validateForm()) {
+                return;
+            }
+
+            // Mostrar loading
+            setLoginLoading(true);
+
+            try {
+                const result = await securityManager.login(email, password);
+
+                if (result.success) {
+                    // Login exitoso - securityManager.redirectByRole() ya se encarga de la redirección
+                    securityManager.showAlert('¡Bienvenido al sistema!', 'success');
+                } else {
+                    throw new Error(result.error || 'Error de autenticación');
+                }
+            } catch (error) {
+                securityManager.showAlert(error.message, 'danger');
+                // Limpiar contraseña en caso de error
+                passwordInput.value = '';
+                passwordInput.focus();
+            } finally {
+                setLoginLoading(false);
+            }
+        });
+    });
+
+    // Validar email
+    function validateEmail(input) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValid = emailRegex.test(input.value.trim());
+
+        if (input.value.trim() === '') {
+            input.classList.remove('is-valid', 'is-invalid');
+        } else if (isValid) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+        } else {
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    // Validar contraseña
+    function validatePassword(input) {
+        const isValid = input.value.trim().length >= 6;
+
+        if (input.value.trim() === '') {
+            input.classList.remove('is-valid', 'is-invalid');
+        } else if (isValid) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+        } else {
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    // Validar formulario completo
+    function validateForm() {
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        const emailValid = validateEmail(emailInput);
+        const passwordValid = validatePassword(passwordInput);
+
+        return emailValid && passwordValid;
+    }
+
+    // Mostrar/ocultar loading en botón de registro
+    function setRegisterLoading(loading) {
+        const registerClientSubmitBtn = document.getElementById('registerClientSubmitBtn');
+        const btnText = registerClientSubmitBtn.querySelector('.btn-text');
+        const spinner = registerClientSubmitBtn.querySelector('.loading-spinner');
+
+        if (loading) {
+            registerClientSubmitBtn.disabled = true;
+            btnText.classList.add('d-none');
+            spinner.classList.remove('d-none');
+        } else {
+            registerClientSubmitBtn.disabled = false;
+            btnText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+        }
+    }
+
+    // Validar campo individual del formulario de registro
+    function validateRegisterField(field) {
+        const value = field.value.trim();
+        let isValid = true;
+        const invalidFeedback = field.nextElementSibling; 
+        if (field.required && value === '') {
+            isValid = false;
+        } else if (field.type === 'email') {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const isValid = emailRegex.test(input.value.trim());
-
-            if (input.value.trim() === '') {
-                input.classList.remove('is-valid', 'is-invalid');
-            } else if (isValid) {
-                input.classList.remove('is-invalid');
-                input.classList.add('is-valid');
-            } else {
-                input.classList.remove('is-valid');
-                input.classList.add('is-invalid');
+            isValid = emailRegex.test(value);
+        } else if (field.name === 'contrasena') {
+            isValid = value.length >= 6; 
+        }
+      
+        if (value === '' && !field.required) {
+            field.classList.remove('is-valid', 'is-invalid');
+            if (invalidFeedback) {
+                invalidFeedback.style.display = 'none';
             }
-
-            return isValid;
-        }
-
-        // Validar contraseña
-        function validatePassword(input) {
-            const isValid = input.value.trim().length >= 6;
-
-            if (input.value.trim() === '') {
-                input.classList.remove('is-valid', 'is-invalid');
-            } else if (isValid) {
-                input.classList.remove('is-invalid');
-                input.classList.add('is-valid');
-            } else {
-                input.classList.remove('is-valid');
-                input.classList.add('is-invalid');
+        } else if (isValid) {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+            if (invalidFeedback) {
+                invalidFeedback.style.display = 'none';
             }
-
-            return isValid;
-        }
-
-        // Validar formulario completo
-        function validateForm() {
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-
-            const emailValid = validateEmail(emailInput);
-            const passwordValid = validatePassword(passwordInput);
-
-            return emailValid && passwordValid;
-        }
-
-         // Mostrar/ocultar loading en botón de registro
-        function setRegisterLoading(loading) {
-            const registerClientSubmitBtn = document.getElementById('registerClientSubmitBtn');
-            const btnText = registerClientSubmitBtn.querySelector('.btn-text');
-            const spinner = registerClientSubmitBtn.querySelector('.loading-spinner');
-
-            if (loading) {
-                registerClientSubmitBtn.disabled = true;
-                btnText.classList.add('d-none');
-                spinner.classList.remove('d-none');
-            } else {
-                registerClientSubmitBtn.disabled = false;
-                btnText.classList.remove('d-none');
-                spinner.classList.add('d-none');
+        } else {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
+            if (invalidFeedback) {
+                invalidFeedback.style.display = 'block';
             }
         }
 
-        // Validar campo individual del formulario de registro
-        function validateRegisterField(field) {
-            const value = field.value.trim();
-            let isValid = true;
-            const invalidFeedback = field.nextElementSibling; // Assuming invalid feedback is the next sibling
+        return isValid;
+    }
 
-            if (field.required && value === '') {
-                isValid = false;
-            } else if (field.type === 'email') {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                isValid = emailRegex.test(value);
-            } else if (field.name === 'contrasena') {
-                isValid = value.length >= 6; // Basic password length validation
+    // Validar formulario de registro completo
+    function validateRegisterForm() {
+        let isFormValid = true;
+        const registerClientForm = document.getElementById('registerClientForm');
+     
+        const fields = registerClientForm.querySelectorAll('.form-control'); 
+
+        fields.forEach(field => {
+            if (!validateRegisterField(field)) {
+                isFormValid = false;
             }
-            // Add other specific validations if needed (e.g., name, company name)
-
-            // Update validation classes and feedback message visibility
-            if (value === '' && !field.required) {
-                field.classList.remove('is-valid', 'is-invalid');
-                 if (invalidFeedback) {
-                    invalidFeedback.style.display = 'none';
-                }
-            } else if (isValid) {
-                field.classList.remove('is-invalid');
-                field.classList.add('is-valid');
-                if (invalidFeedback) {
-                    invalidFeedback.style.display = 'none';
-                }
-            } else {
-                field.classList.remove('is-valid');
-                field.classList.add('is-invalid');
-                 if (invalidFeedback) {
-                    invalidFeedback.style.display = 'block';
-                }
-            }
-
-            return isValid;
-        }
-
-        // Validar formulario de registro completo
-        function validateRegisterForm() {
-            let isFormValid = true;
-            const registerClientForm = document.getElementById('registerClientForm');
-             // Get all form controls that need validation (e.g., all inputs)
-            const fields = registerClientForm.querySelectorAll('.form-control'); // Adjust selector if needed
-
-            fields.forEach(field => {
-                if (!validateRegisterField(field)) {
-                    isFormValid = false;
-                }
-            });
-
-             // Apply Bootstrap's form validation visual feedback (shows feedback for all fields)
-             // registerClientForm.classList.add('was-validated'); // This can be added if you want default Bootstrap validation styling
-
-            return isFormValid;
-        }
-
-         // Mostrar/ocultar loading en botón de registro
-        function setRegisterLoading(loading) {
-            const registerClientSubmitBtn = document.getElementById('registerClientSubmitBtn');
-             securityManager.setLoadingState(registerClientSubmitBtn, loading);
-        }
-
-        // Inicializar forms al cargar el DOM
-        function setupLoginFormSubmission() {
-             const loginForm = document.getElementById('loginForm');
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            const togglePassword = document.getElementById('togglePassword');
-            const loginBtn = document.getElementById('loginBtn');
-
-            // Toggle password visibility
-            togglePassword.addEventListener('click', function() {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                const icon = this.querySelector('i');
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
-            });
-
-            // Assuming real-time validation listeners are already added or will be added elsewhere
-            // emailInput.addEventListener('input', function() { validateEmail(this); });
-            // passwordInput.addEventListener('input', function() { validatePassword(this); });
-
-             // ... rest of the login form submission logic (as was in the previous DOMContentLoaded)
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            setupLoginFormSubmission();
         });
-    </script>
 
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
-            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
-        }
-    </style>
+        
+
+        return isFormValid;
+    }
+
+    // Mostrar/ocultar loading en botón de registro
+    function setRegisterLoading(loading) {
+        const registerClientSubmitBtn = document.getElementById('registerClientSubmitBtn');
+        securityManager.setLoadingState(registerClientSubmitBtn, loading);
+    }
+
+    // Inicializar forms al cargar el DOM
+    function setupLoginFormSubmission() {
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const loginBtn = document.getElementById('loginBtn');
+
+        // Toggle password visibility
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            const icon = this.querySelector('i');
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
+
+        
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setupLoginFormSubmission();
+    });
+</script>
+
+<style>
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+        50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+    }
+</style>
 </body>
 </html>

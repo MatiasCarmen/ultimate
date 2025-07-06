@@ -8,6 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.mycompany.vcsystems.modelo.repository.*;
 
 @TestConfiguration
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class TestConfig {
 
     @MockBean

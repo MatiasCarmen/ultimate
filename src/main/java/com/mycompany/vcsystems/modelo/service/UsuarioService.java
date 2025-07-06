@@ -28,7 +28,7 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
 
     private final PasswordEncoder passwordEncoder;
     private static final Pattern PASSWORD_PATTERN =
-        Pattern.compile("^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$");
+            Pattern.compile("^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$");
 
     private static final Logger log = LoggerFactory.getLogger(UsuarioService.class); // Manual Logger if no Lombok
 
@@ -36,26 +36,30 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
     public UsuarioService(UsuarioRepository usuarioRepository, ClienteRepository clienteRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.clienteRepository = clienteRepository;
- this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Usuario registrarUsuario(Usuario usuario) {
         validarContrasena(usuario.getContrasena()); // Add password validation
 
- usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
-        usuario.setActivo(true); // Assuming new users are active by default
+        usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+        // Assuming new users are active by default, you might set a flag or rely on default DB value
+        // If Usuario entity has an 'activo' field and setter, uncomment the line below:
+        // usuario.setActivo(true);
         Usuario savedUsuario = usuarioRepository.save(usuario);
 
         if (savedUsuario.getRol() == Usuario.Rol.CLIENTE) {
-            clienteRepository.save(new Cliente(savedUsuario)); // Create and save associated Client entity
+            Cliente cliente = new Cliente(); // Create Cliente using default constructor
+            cliente.setUsuario(savedUsuario); // Associate the saved Usuario with the Cliente
+            clienteRepository.save(cliente); // Save the associated Client entity
         }
-        return usuarioRepository.save(usuario);
+        return savedUsuario; // Return the saved Usuario object
     }
 
     private void validarContrasena(String password) {
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
             throw new ValidationException("La contraseña debe tener al menos 8 caracteres, " +
-                "incluir un número y un símbolo (!@#$%^&*)");
+                    "incluir un número y un símbolo (!@#$%^&*)");
         }
     }
 
@@ -63,8 +67,8 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
         log.info("Attempting authentication for user: {}", correo);
 
         Optional<Usuario> userOpt = usuarioRepository.findByCorreo(correo);
- boolean passwordMatches = userOpt.isPresent() &&
- passwordEncoder.matches(rawPassword, userOpt.get().getContrasena());
+        boolean passwordMatches = userOpt.isPresent() &&
+                passwordEncoder.matches(rawPassword, userOpt.get().getContrasena());
 
         log.info("Password match result for user {}: {}", correo, passwordMatches);
         if (passwordMatches) {
@@ -76,8 +80,8 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
 
     public String obtenerRolPorCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo)
-            .map(usuario -> usuario.getRol().toString())
-            .orElse(null);
+                .map(usuario -> usuario.getRol().toString())
+                .orElse(null);
     }
 
     public Optional<Usuario> findByCorreo(String correo) {
@@ -87,12 +91,12 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + correo));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + correo));
 
         return new org.springframework.security.core.userdetails.User(
-            usuario.getCorreo(),
-            usuario.getContrasena(),
-            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()))
+                usuario.getCorreo(),
+                usuario.getContrasena(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()))
         );
     }
 }

@@ -1,4 +1,4 @@
-package com.mycompany.vcsystems.api.controller;
+package com.mycompany.vcsystems.api.controlador;
 
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -27,7 +27,14 @@ import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/reportes")
-public class ReporteController {
+
+
+/**
+ *
+ * @author MatiasCarmen
+ */
+
+public class ReporteControlador {
 
     @Autowired
     private IncidenciaService incidenciaService;

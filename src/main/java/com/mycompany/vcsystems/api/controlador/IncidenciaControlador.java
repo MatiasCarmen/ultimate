@@ -1,4 +1,4 @@
-package com.mycompany.vcsystems.api.controller;
+package com.mycompany.vcsystems.api.controlador;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,14 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/incidencias")
 @Slf4j // Agregar para logging
-public class IncidenciaController {
+
+
+/**
+ *
+ * @author MatiasCarmen
+ */
+
+public class IncidenciaControlador {
 
     @Autowired
     private IncidenciaService incidenciaService;

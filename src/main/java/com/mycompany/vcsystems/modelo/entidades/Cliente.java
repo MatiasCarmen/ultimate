@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+/**
+ *
+ * @author MatiasCarmen
+ */
 public class Cliente {
 
     @Id
@@ -26,7 +30,6 @@ public class Cliente {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @NotBlank
     @Column(name = "nombre_empresa", nullable = false)
     private String nombreEmpresa;
 

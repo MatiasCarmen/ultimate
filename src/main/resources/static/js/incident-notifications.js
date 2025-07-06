@@ -23,7 +23,7 @@ class IncidentNotificationManager {
         this.init();
     }
 
-    // NUEVO: Obtener URL del WebSocket desde configuración o variables de entorno
+    //  Obtener URL del WebSocket desde configuración o variables de entorno
     getWebSocketUrl() {
         // Prioridad: 1) Variable de entorno, 2) Meta tag, 3) Configuración por defecto
         const envUrl = window.APP_CONFIG?.WS_URL;
@@ -33,7 +33,7 @@ class IncidentNotificationManager {
         return envUrl || metaUrl || `ws://${window.location.hostname}:8081/ws/notifications`;
     }
 
-    // NUEVO: Cargar sonido de notificación desde archivo externo
+    //  Cargar sonido de notificación desde archivo externo
     async loadNotificationSound() {
         if (this.config.notificationSoundUrl) {
             try {
@@ -49,7 +49,7 @@ class IncidentNotificationManager {
         }
     }
 
-    // NUEVO: Crear sonido de notificación por defecto (data URL como fallback)
+    //Crear sonido de notificación por defecto (data URL como fallback)
     createDefaultNotificationSound() {
         const dataUrl = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhCjs2hqmMhYU...'; // Sonido corto y simple
         try {
@@ -123,7 +123,7 @@ class IncidentNotificationManager {
         }
     }
 
-    // Programar reconexión - MEJORADO
+    // Programar reconexión - MEJORADO ya no da erroricito sii
     scheduleReconnect() {
         if (this.reconnectAttempts >= this.config.reconnectAttempts) {
             this.toastManager.warning(
@@ -189,7 +189,7 @@ class IncidentNotificationManager {
         this.dispatchNotificationEvent(processedNotification);
     }
 
-    // NUEVO: Mostrar notificación usando el módulo común de tostadas
+    // Mostrar notificación usando el módulo común de tostadas
     showNotificationToast(notification) {
         const options = {
             title: notification.title
@@ -210,7 +210,7 @@ class IncidentNotificationManager {
         }
     }
 
-    // NUEVO: Reproducir sonido de notificación
+    //  Reproducir sonido de notificación
     playNotificationSound() {
         if (this.notificationSound && this.isNotificationSoundEnabled()) {
             try {

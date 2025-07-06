@@ -1,4 +1,4 @@
-package com.mycompany.vcsystems.api.controller;
+package com.mycompany.vcsystems.api.controlador;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,14 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/solicitudes")
-public class SolicitudController {
+
+
+/**
+ *
+ * @author MatiasCarmen
+ */
+
+public class SolicitudControlador {
 
     @Autowired
     private SolicitudRepuestoRepository solicitudRepository;
