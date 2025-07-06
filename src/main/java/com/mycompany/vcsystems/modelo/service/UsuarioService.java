@@ -43,13 +43,17 @@ public class UsuarioService implements UserDetailsService { // Add @Slf4j here i
         validarContrasena(usuario.getContrasena()); // Add password validation
 
  usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
-        usuario.setActivo(true); // Assuming new users are active by default
+        // Assuming new users are active by default, you might set a flag or rely on default DB value
+        // If Usuario entity has an 'activo' field and setter, uncomment the line below:
+        // usuario.setActivo(true); 
         Usuario savedUsuario = usuarioRepository.save(usuario);
 
         if (savedUsuario.getRol() == Usuario.Rol.CLIENTE) {
-            clienteRepository.save(new Cliente(savedUsuario)); // Create and save associated Client entity
+            Cliente cliente = new Cliente(); // Create Cliente using default constructor
+            cliente.setUsuario(savedUsuario); // Associate the saved Usuario with the Cliente
+            clienteRepository.save(cliente); // Save the associated Client entity
         }
-        return usuarioRepository.save(usuario);
+ return savedUsuario; // Return the saved Usuario object
     }
 
     private void validarContrasena(String password) {

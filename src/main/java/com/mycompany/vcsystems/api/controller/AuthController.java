@@ -8,7 +8,9 @@ import com.mycompany.vcsystems.modelo.service.UsuarioService;
 import com.mycompany.vcsystems.modelo.entidades.Usuario; // Asegúrate de importar la clase Usuario
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import org.springframework.dao.DataIntegrityViolationException;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.ValidationException; // Importar la clase ValidationException de Jakarta Validation
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,7 +69,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping(\"/register/cliente\")
+    @PostMapping("/register/cliente")
     public ResponseEntity<?> registerCliente(@Valid @RequestBody RegisterClienteRequest request) {
  try {
             Usuario nuevoUsuario = new Usuario();
@@ -79,10 +81,13 @@ public class AuthController {
             Usuario usuarioRegistrado = usuarioService.registrarUsuario(nuevoUsuario); // Esto también crea el Cliente asociado
 
  return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRegistrado);
-        } catch (ValidationException e) {
- return ResponseEntity.badRequest().body(Map.of(\"error\", e.getMessage(), \"success\", false));
+        } catch (ValidationException e) { // Usar la ValidationException importada
+ return ResponseEntity.badRequest().body(Map.of("error", e.getMessage(), "success", false));
         } catch (Exception e) {
- return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(\"error\", \"Error interno del servidor\", \"success\", false));
+            if (e.getCause() instanceof DataIntegrityViolationException) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "El correo electrónico ya está registrado.", "success", false));
+            }
+ return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error interno del servidor", "success", false));
         }
     }
     @Data
@@ -111,14 +116,14 @@ public class AuthController {
 
  @Data
     static class RegisterClienteRequest {
- @NotBlank(message = \"El nombre es requerido\")
+ @NotBlank(message = "El nombre es requerido")
  private String nombre;
 
- @Email(message = \"Formato de email inválido\")
- @NotBlank(message = \"El correo es requerido\")
+ @Email(message = "Formato de email inválido")
+ @NotBlank(message = "El correo es requerido")
  private String correo;
 
- @NotBlank(message = \"La contraseña es requerida\")
+ @NotBlank(message = "La contraseña es requerida")
  private String contrasena; // La validación de formato de contraseña se hará en UsuarioService
     }
     /**

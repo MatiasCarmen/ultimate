@@ -137,7 +137,7 @@ class SecurityManager {
     // Verificar autenticación y redireccionar si es necesario
     checkAuthentication() {
         const currentPage = window.location.pathname;
-        const isLoginPage = currentPage.includes('login.html') || currentPage === '/'; // Considerar '/' como página de login
+        const isLoginPage = currentPage.includes('login.html') || currentPage === '/' || currentPage.includes('registro.html'); // Considerar '/' y registro.html como páginas de login
 
         if (!this.isAuthenticated() && !isLoginPage) {
             window.location.href = '/pages/login.html';
