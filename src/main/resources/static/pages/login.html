@@ -120,6 +120,22 @@
 <script src="/js/security.js"></script>
 
 <script>
+    // Mostrar/ocultar loading en botón de login
+    function setLoginLoading(loading) {
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = loginBtn.querySelector('.btn-text');
+        const spinner = loginBtn.querySelector('.loading-spinner');
+
+        if (loading) {
+            loginBtn.disabled = true;
+            btnText.classList.add('d-none');
+            spinner.classList.remove('d-none');
+        } else {
+            loginBtn.disabled = false;
+            btnText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+        }
+    }
     // Function to set up login form submission
     // Inicialización de la página de login
     document.addEventListener('DOMContentLoaded', function() {
@@ -251,16 +267,16 @@
     function validateRegisterField(field) {
         const value = field.value.trim();
         let isValid = true;
-        const invalidFeedback = field.nextElementSibling; 
+        const invalidFeedback = field.nextElementSibling;
         if (field.required && value === '') {
             isValid = false;
         } else if (field.type === 'email') {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             isValid = emailRegex.test(value);
         } else if (field.name === 'contrasena') {
-            isValid = value.length >= 6; 
+            isValid = value.length >= 6;
         }
-      
+
         if (value === '' && !field.required) {
             field.classList.remove('is-valid', 'is-invalid');
             if (invalidFeedback) {
@@ -287,8 +303,8 @@
     function validateRegisterForm() {
         let isFormValid = true;
         const registerClientForm = document.getElementById('registerClientForm');
-     
-        const fields = registerClientForm.querySelectorAll('.form-control'); 
+
+        const fields = registerClientForm.querySelectorAll('.form-control');
 
         fields.forEach(field => {
             if (!validateRegisterField(field)) {
@@ -296,7 +312,7 @@
             }
         });
 
-        
+
 
         return isFormValid;
     }
@@ -324,7 +340,7 @@
             icon.classList.toggle('fa-eye-slash');
         });
 
-        
+
     }
 
     document.addEventListener('DOMContentLoaded', function() {
